@@ -12,7 +12,7 @@ if (window.addEventListener) {
 
 function report() {
 	"use strict";
-	console.log(th.controlbar);
+/*	console.log(th.controls.playerBar.playBtn);*/
 	if (th.device && !th.showDevice) {
 		return;
 	}
@@ -60,7 +60,7 @@ var th = {
 	oncepersession: "no", //option for number of times video plays "yes", "no", or "onceonly"
 	path: "talkingheads", //path to where the files are located
 	actorpic: "slider", //transparent gif
-	canvas: "Slider-Matte-hb", //Just name,not extension
+	canvasVideo: "Slider-Matte-hb", //Just name,not extension
 	h264: "slider", //Just name,not extension h264
 	// end Main Player Vars--------------------------------------------------------------------------------------
 	overflow: "hidden",
@@ -73,6 +73,10 @@ var th = {
 	holder: "true",
 	video: "true",
 	controls: "yes",
+	canvas: {
+		buffer: "",
+		main: ""
+	},
 	device: function () {
 		"use strict";
 		if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent) ||
@@ -99,7 +103,6 @@ var th = {
 		},
 		margin: function () {
 			'use strict';
-			console.log(th.width);
 			return ((th.width - th.playerBar.width()) / 2) + "px";
 		},
 		height: function () {
@@ -119,11 +122,10 @@ var th = {
 		video: function () {
 			'use strict';
 			if (th.canvasSupported) {
-				return th.path + "/" + th.canvas + ".mp4";
+				return th.path + "/" + th.canvasVideo + ".mp4";
 			} else {
 				return th.path + "/" + th.h264 + ".mp4";
 			}
-			return th.path + "/" + th.canvas + ".mp4";
 		},
 		poster: function () {
 			'use strict';
@@ -134,25 +136,25 @@ var th = {
 	storage: {
 		name: function () {
 			'use strict';
-			return th.canvas;
+			return th.canvasVideo;
 		},
 		local: function () {
 			'use strict';
-			var l = localStorage.getItem(th.canvas);
+			var l = localStorage.getItem(th.canvasVideo);
 			if (l) {
 				return true;
 			} else {
-				localStorage.setItem(th.canvas, true);
+				localStorage.setItem(th.canvasVideo, true);
 				return false;
 			}
 		},
 		session: function () {
 			'use strict';
-			var s = sessionStorage.getItem(th.canvas);
+			var s = sessionStorage.getItem(th.canvasVideo);
 			if (s) {
 				return true;
 			} else {
-				sessionStorage.setItem(th.canvas, true);
+				sessionStorage.setItem(th.canvasVideo, true);
 				return false;
 			}
 		},
@@ -259,7 +261,7 @@ function createPlayer() {
 		th.holder = document.createElement("div");
 		th.holder.id = "wthvideo";
 		th.holder.style.position = th.position;
-		th.holder.style.marginLeft = th.centeroffset;
+		th.holder.style.marginLeft = th.centeroffset + "px";
 		th.holder.style.left = th.left;
 		th.holder.style.right = th.right;
 		th.holder.style.marginLeft = th.centeroffset;
@@ -399,14 +401,78 @@ function createPlayer() {
 
 	function createCanvas() {
 		console.log("createCanvas");
+		th.canvas.buffer = document.createElement("CANVAS");
+		th.canvas.buffer.id = "bufferCanvas";
+		th.canvas.buffer.width = th.width;
+		th.canvas.buffer.height = th.height * 2;
+		th.canvas.buffer.style.display = "none";
+		th.canvas.buffer.style.position = "absolute";
+		th.holder.appendChild(th.canvas.buffer);
+		th.canvas.main = document.createElement("CANVAS");
+		th.canvas.main.style.position = "absolute";
+		th.canvas.main.style.top = "0";
+		th.canvas.main.style.left = "0";
+		th.canvas.main.id = "talkingCanvas";
+		th.canvas.main.width = th.width;
+		th.canvas.main.height = th.height * 2;
+		th.holder.appendChild(th.canvas.main);
 	}
 
 	function playSpokesperson() {
-		console.log("playSpokesperson");
+		if (th.autostart === "yes" || th.toLoop === true) {
+			var promise = th.video.play();
+			if (promise !== undefined) {
+				promise.then(_ => {
+					th.controls.playerBar.playBtn = buttonPath + "PauseBtn.png";
+				}).catch(error => {
+					console.log('Play Error');
+					goPoster();
+				});
+			}
+		}
+		if (th.autostart === "yes" || th.toLoop === true) {
+			th.video.autoplay = true;
+			document.getElementById("PlayPauseBtn").src = buttonPath + "PauseBtn.png";
+			document.getElementById("playerBar").style.opacity = "1";
+			startPlaying();
+		} else {
+			goPoster();
+		}
+		if (th.exitoncomplete === "yes") {
+			th.video.addEventListener("ended", closePlayer, false);
+		}
+		
 	}
-
+		function startPlaying(){
+		if (th.canvas.main && th.canvas.main.getContext) {
+			var ctx = th.canvas.main.getContext("2d");
+			if (ctx) {
+				var playingS = setInterval(function () {
+					showVideo();
+				}, 16);
+			}
+		}
+	}
+	function showVideo() {
+		try {
+			var ctx = th.canvas.main.getContext("2d"),
+				srcVid = th.video,
+				buffer = th.canvas.buffer.getContext("2d");
+			buffer.drawImage(srcVid, 0, 0);
+			var image = buffer.getImageData(0, 0, th.width, th.height),
+				imageData = image.data,
+				alphaData = buffer.getImageData(0, th.height, th.width, th.height).data;
+			for (var i = 3, len = imageData.length; i < len; i = i + 4) {
+				imageData[i] = alphaData[i - 1];
+			}
+			ctx.putImageData(image, 0, 0, 0, 0, th.width, th.height);
+		} catch (err) {}
+	}
 	function startBtnCreate() {
 		console.log("start button create");
+	}
+	function goPoster(){
+		console.log( "goPoster" );
 	}
 }
 
@@ -414,55 +480,6 @@ function createPlayer() {
 
 
 /*
-	function createCanvas() {
-		thb = document.createElement("CANVAS");
-		thb.id = "bufferCanvas";
-		thb.width = width;
-		thb.height = height * 2;
-		thb.style.display = "none";
-		thb.style.position = "absolute";
-		thv.appendChild(thb);
-		thc = document.createElement("CANVAS");
-		thc.style.position = "absolute";
-		thc.style.top = "0";
-		thc.style.left = "0";
-		thc.id = "talkingCanvas";
-		thc.width = width;
-		thc.height = height * 2;
-		thv.appendChild(thc);
-	}
-
-
-
-	function startPlaying() {
-		theCanvas = document.getElementById("talkingCanvas");
-		outputCanvas = document.getElementById("bufferCanvas");
-		if (theCanvas && theCanvas.getContext) {
-			var ctx = theCanvas.getContext("2d");
-			if (ctx) {
-				playingS = setInterval(function () {
-					showVideo();
-				}, 16);
-			}
-		}
-	}
-
-	function showVideo() {
-		try {
-			var theCanvas = document.getElementById("talkingCanvas"),
-				ctx = theCanvas.getContext("2d"),
-				srcVid = thplayer,
-				buffer = outputCanvas.getContext("2d");
-			buffer.drawImage(srcVid, 0, 0);
-			var image = buffer.getImageData(0, 0, width, height),
-				imageData = image.data,
-				alphaData = buffer.getImageData(0, height, width, height).data;
-			for (var i = 3, len = imageData.length; i < len; i = i + 4) {
-				imageData[i] = alphaData[i - 1];
-			}
-			ctx.putImageData(image, 0, 0, 0, 0, width, height);
-		} catch (err) {}
-	}
 
 	function HTML5Autostart() {
 		if (autostart === "yes" || toLoop === true) {
