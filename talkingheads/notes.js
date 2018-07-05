@@ -1,59 +1,24 @@
-	player: {
-		loop: function () {
-			'use strict';
-			if(th.autostart === "loop"){
-				return true;
+	function HTML5Autostart() {
+		if (th.autostart === "yes" || th.toLoop === true) {
+			var promise = th.video.play();
+			if (promise !== undefined) {
+				promise.then(_ => {
+					document.getElementById("PlayPauseBtn").src = buttonPath + "PauseBtn.png";
+				}).catch(error => {
+					console.log('Play Error');
+					goPoster();
+				});
 			}
-			return false;
-		},
-		mute: function () {
-			'use strict';
-			if(th.autostart = mute){
-				return true;
-			}
-			if(th.autostart === "oncethenmute" && th.storage.session === true){
-				return true;
-			}else{
-				return false;
-			}
-		},
-			autostart:function(){
-				if(this.loop || this.mute){
-					return true;
-				}else{
-					return false;
-				}
-			}
-
-
-				switch (th.oncepersession) {
-					case "yes":
-						if (hasSeenSS === "true") {
-							th.toPlay = false;
-						} else {
-							th.toPlay = true;
-						}
-						break;
-					case "onceonly":
-						if (hasSeenLS === "true") {
-							th.toPlay = false;
-						} else {
-							th.toPlay = true;
-						}
-						break;
-					default:
-						th.toPlay = true;
-						break;
-				}
-				switch (th.autostart) {
-					case "onceonlythenmute":
-					case "mute":
-						th.autostart = "mute";
-						break;
-					case "onceonlythenpic":
-						th.autostart = "no";
-						break;
-					default:
-						th.autostart = "yes";
-				}
+		}
+		if (th.autostart === "yes" || th.toLoop === true) {
+			th.video.autoplay = true;
+			document.getElementById("PlayPauseBtn").src = buttonPath + "PauseBtn.png";
+			document.getElementById("playerBar").style.opacity = "1";
+			startPlaying();
+		} else {
+			goPoster();
+		}
+		if (th.exitoncomplete === "yes") {
+			th.video.addEventListener("ended", closePlayer, false);
+		}
 	}
