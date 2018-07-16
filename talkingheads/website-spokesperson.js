@@ -47,7 +47,7 @@ function report() {
 		}
 	}
 	document.getElementById('reporter').innerHTML = str;
-	console.log(th.btn);
+	console.log(th.video);
 }
 var th = {
 	responsive: false, //You must place <div id:"wthvideo"></div> inside the div you want the video to be in.
@@ -85,7 +85,7 @@ var th = {
 	toPlay: true,
 	canvasSupported: !!window.HTMLCanvasElement,
 	holder: "true",
-	video: "true",
+	video: "",
 	controls: "yes",
 	canvas: {
 		buffer: "",
@@ -460,9 +460,6 @@ function createPlayer() {
 		} else {
 			goPoster();
 		}
-		if (th.exitoncomplete === "yes") {
-			th.video.addEventListener("ended", closePlayer, false);
-		}
 
 	}
 
@@ -498,106 +495,144 @@ function createPlayer() {
 	}
 
 	function goPoster() {
-		console.log("goPoster");
-	}
-
-	function addListeners() {
-		th.holder.addEventListener("click", doSomething, false);
-		th.holder.addEventListener("mouseover", overVideo, false);
-		th.holder.addEventListener("mouseout", outVideo, false);
-		if (th.goStop > 0) {
-			var frameRate = 30;
-			th.player.ontimeupdate = function () {
-				if (myPause === false) {
-					timeUpdate();
-				}
-			};
-			try {
-				th.player.addEentListener("ended", videoEnded, false);
-			} catch (err) {}
-		}
-	}
-
-	function outVideo(e) {
-		if (e.target !== e.currentTarget) {
-			switch (e.target.id) {
-				case "talkingCanvas":
-					th.controls.playerBar.style.marginTop = "0px";
-					break;
-				case "playBtn":
-				case "muteBtn":
-				case "restartBtn":
-				case "closeBtn":
-				case "htmlClose":
-					e.target.style.opacity = 1;
-					break;
-			}
-		}
-		e.stopPropagation();
-	}
-
-	function overVideo(e) {
-		if (e.target !== e.currentTarget) {
-			switch (e.target.id) {
-				case "talkingCanvas":
-					th.controls.playerBar.style.marginTop = th.playerBar.margin;
-					break;
-				case "playBtn":
-				case "muteBtn":
-				case "restartBtn":
-				case "closeBtn":
-				case "htmlClose":
-					e.target.style.opacity = 0.5;
-					th.controls.playerBar.style.marginTop = th.playerBar.margin;
-					break;
-			}
-		}
-		e.stopPropagation();
-	}
-
-	function doSomething(e) {
-		if (e.target !== e.currentTarget) {
-			console.log( 'click=' + e.target.id );
-			switch (e.target.id) {
-				case "muteBtn":
-					muteToggle();
-					break;
-				case "restartBtn":
-					restartClick();
-					break;
-				case "closeBtn":
-				case "htmlClose":
-					closePlayer();
-					break;
-				case "talkingCanvas":
-				case "talkinghead":
-				case "click-to-play":
-				case "playBtn":
-					playToggle();
-					break;
-			}
-		}
-		e.stopPropagation();
-	}
-
-	function videoEnded() {
-		th.btn.playBtn.src = th.paths.button() + "PlayBtn.png";
-		if (th.exitoncomplete === "yes") {
-			closePlayer();
+		th.video.autoplay = false;
+		th.video.load();
+		th.btn.playBtn.src = th.paths.button() + "playBtn.png";
+		var elementExists = document.getElementById('click-to-play');
+		if (elementExists) {
+			startBtn.style.visibility = "visible";
+			console.log('elementExists');
 		} else {
-			th.player.autoplay = false;
-			goPoster();
+			startBtnCreate();
+		}
+}
+
+function addListeners() {
+	th.holder.addEventListener("click", doSomething, false);
+	th.holder.addEventListener("mouseover", overVideo, false);
+	th.holder.addEventListener("mouseout", outVideo, false);
+	th.video.addEventListener("ended", videoEnded, false);
+	if (th.exitoncomplete === "yes") {
+		th.video.getElementById('talkinghead').addEventListener("ended", closePlayer, false);
+	}
+	if (th.goStop > 0) {
+		var frameRate = 30;
+		th.player.ontimeupdate = function () {
+			if (myPause === false) {
+				timeUpdate();
+			}
+		};
+	}
+}
+
+function outVideo(e) {
+	if (e.target !== e.currentTarget) {
+		switch (e.target.id) {
+			case "talkingCanvas":
+				th.controls.playerBar.style.marginTop = "0px";
+				break;
+			case "playBtn":
+			case "muteBtn":
+			case "restartBtn":
+			case "closeBtn":
+			case "htmlClose":
+				e.target.style.opacity = 1;
+				break;
 		}
 	}
+	e.stopPropagation();
+}
 
-	function closePlayer() {
-		th.video.pause();
-//		clearInterval(playingS);
-		try {
-			document.body.removeChild(document.getElementById("wthvideo"));
-		} catch (err) {}
-		return;
+function overVideo(e) {
+	if (e.target !== e.currentTarget) {
+		switch (e.target.id) {
+			case "talkingCanvas":
+				th.controls.playerBar.style.marginTop = th.playerBar.margin;
+				break;
+			case "playBtn":
+			case "muteBtn":
+			case "restartBtn":
+			case "closeBtn":
+			case "htmlClose":
+				e.target.style.opacity = 0.5;
+				th.controls.playerBar.style.marginTop = th.playerBar.margin;
+				break;
+		}
 	}
+	e.stopPropagation();
+}
+
+function doSomething(e) {
+	if (e.target !== e.currentTarget) {
+		console.log('click=' + e.target.id);
+		switch (e.target.id) {
+			case "muteBtn":
+				muteToggle();
+				break;
+			case "restartBtn":
+				restartClick();
+				break;
+			case "closeBtn":
+			case "htmlClose":
+				closePlayer();
+				break;
+			case "talkingCanvas":
+			case "talkinghead":
+			case "click-to-play":
+			case "playBtn":
+				playToggle();
+				break;
+		}
+	}
+	e.stopPropagation();
+}
+
+function videoEnded() {
+	if (th.exitoncomplete === "yes") {
+		closePlayer();
+	} else {
+		goPoster();
+	}
+}
+
+function closePlayer() {
+	th.video.pause();
+	//		clearInterval(playingS);
+	try {
+		document.body.removeChild(document.getElementById("wthvideo"));
+	} catch (err) {}
+	return;
+}
+
+function muteToggle() {
+	if (th.video.muted) {
+		th.video.muted = false;
+		th.btn.muteBtn.src = th.paths.button() + "muteBtn.png";
+	} else {
+		th.btn.muteBtn.src = th.paths.button() + "unmuteBtn.png";
+		th.video.muted = true;
+	}
+}
+
+function restartClick() {
+	th.video.currentTime = 0;
+	th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
+	th.video.play();
+}
+
+function playToggle() {
+	if (th.video.paused) {
+		try {
+			document.getElementById("click-to-play").parentNode.removeChild(document.getElementById("click-to-play"));
+		} catch (err) {}
+		th.video.play();
+		th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
+		th.controls.playerBar.style.opacity = "1";
+	} else {
+		th.btn.playBtn.src = th.paths.button() + "playBtn.png";
+		th.video.pause();
+	}
+}
 }
 
 
@@ -605,7 +640,7 @@ function createPlayer() {
 
 	function HTML5Autostart() {
 		if (autostart === "yes" || toLoop === true) {
-			var promise = th.player.play();
+			var promise = th.video.play();
 			if (promise !== undefined) {
 				promise.then(_ => {
 					th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
@@ -616,7 +651,7 @@ function createPlayer() {
 			}
 		}
 		if (autostart === "yes" || toLoop === true) {
-			th.player.autoplay = true;
+			th.video.autoplay = true;
 			th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
 			th.controls.playerBar.style.opacity = "1";
 			startPlaying();
@@ -624,36 +659,36 @@ function createPlayer() {
 			goPoster();
 		}
 		if (exitoncomplete === "yes") {
-			th.player.addEventListener("ended", closePlayer, false);
+			th.video.addEventListener("ended", closePlayer, false);
 		}
 	}
 
 
 
 		function timeUpdate() {
-			curTime = th.player.currentTime;
+			curTime = th.video.currentTime;
 			var theCurrentFrame = Math.floor(curTime * frameRate);
 			if (theCurrentFrame >= goStop && theCurrentFrame <= goStop + 10) {
-				th.btn.playBtn.src = th.paths.button() + "PlayBtn.png";
+				th.btn.playBtn.src = th.paths.button() + "playBtn.png";
 				myPause = true;
-				th.player.pause();
+				th.video.pause();
 				startBtnCreate();
 			}
 		}
 
 
 		try {
-			th.player.addEventListener("ended", videoEnded, false);
+			th.video.addEventListener("ended", videoEnded, false);
 		} catch (err) {}
 	}
 
 
 	function videoEnded() {
-		th.btn.playBtn.src = th.paths.button() + "PlayBtn.png";
+		th.btn.playBtn.src = th.paths.button() + "playBtn.png";
 		if (exitoncomplete === "yes") {
 			closePlayer();
 		} else {
-			th.player.autoplay = false;
+			th.video.autoplay = false;
 			goPoster();
 		}
 	}
@@ -661,7 +696,7 @@ function createPlayer() {
 	function playClick() {
 		document.getElementById("click-to-play").style.visibility = "visible";
 		if (!canvasSupported) {
-			th.player.play();
+			th.video.play();
 			th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
 		} else {
 			startPlaying();
@@ -669,41 +704,41 @@ function createPlayer() {
 	}
 
 	function playToggle() {
-		if (th.player.paused) {
+		if (th.video.paused) {
 			try {
 				document.getElementById("click-to-play").parentNode.removeChild(document.getElementById("click-to-play"));
 			} catch (err) {}
-			th.player.play();
+			th.video.play();
 			th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
 			th.controls.playerBar.style.opacity = "1";
 		} else {
-			th.btn.playBtn.src = th.paths.button() + "PlayBtn.png";
-			th.player.pause();
+			th.btn.playBtn.src = th.paths.button() + "playBtn.png";
+			th.video.pause();
 		}
 	}
 
 	function muteToggle() {
-		if (th.player.muted) {
-			th.player.muted = false;
-			document.getElementById("muteBtn").src = th.paths.button() + "VolumeBtn.png";
+		if (th.video.muted) {
+			th.video.muted = false;
+			th.btn.muteBtn.src = th.paths.button() + "VolumeBtn.png";
 		} else {
-			document.getElementById("muteBtn").src = th.paths.button() + "VolumeBtnMute.png";
-			th.player.muted = true;
+			th.btn.muteBtn.src = th.paths.button() + "VolumeBtnMute.png";
+			th.video.muted = true;
 		}
 	}
 
 	function restartClick() {
-		th.player.currentTime = 0;
+		th.video.currentTime = 0;
 		th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
 		playClick();
-		th.player.play();
+		th.video.play();
 	}
 
 
 
 	function goPoster() {
 		console.log('goPoster');
-		th.player.load();
+		th.video.load();
 		var elementExists = document.getElementById('click-to-play');
 		if (elementExists) {
 			startBtn.style.visibility = "visible";
@@ -736,11 +771,11 @@ function createPlayer() {
 
 
 	function removeMuted() {
-		document.getElementById("muteBtn").src = th.paths.button() + "VolumeBtn.png";
+		th.btn.muteBtn.src = th.paths.button() + "VolumeBtn.png";
 		toMute = false;
 		toLoop = false;
-		th.player.muted = false;
-		th.player.loop = false;
+		th.video.muted = false;
+		th.video.loop = false;
 		setTimeout(function () {
 			restartClick();
 		}, 150);
