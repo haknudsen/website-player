@@ -112,7 +112,8 @@ var th = {
 		playBtn: "",
 		restartBtn: "",
 		muteBtn: "",
-		closeBtn: ""
+		closeBtn: "",
+		startBtn: ""
 	},
 	playerBar: {
 		width: function () {
@@ -491,7 +492,24 @@ function createPlayer() {
 	}
 
 	function startBtnCreate() {
-		console.log("start button create");
+		console.log('create startbtn');
+		th.btn.startBtn = document.createElement("h3");
+		th.btn.startBtn.id = "click-to-play";
+		th.btn.startBtn.alt = "Click to Play";
+		th.btn.startBtn.style.margin = "-60% auto 0";
+		th.btn.startBtn.style.maxWidth = "50%";
+		th.btn.startBtn.style.position = "relative";
+		th.btn.startBtn.style.textAlign = "center";
+		th.btn.startBtn.style.cursor = "pointer";
+		th.btn.startBtn.style.zIndex = 100;
+		th.btn.startBtn.style.background = th.bgColor;
+		th.btn.startBtn.style.color = th.textColor;
+		th.btn.startBtn.style.border = th.textColor + " thin solid";
+		th.btn.startBtn.style.borderRadius = "8px";
+		th.btn.startBtn.style.padding = ".25rem";
+		th.holder.appendChild(th.btn.startBtn);
+		var t = document.createTextNode(th.btnText);
+		th.btn.startBtn.appendChild(t);
 	}
 
 	function goPoster() {
