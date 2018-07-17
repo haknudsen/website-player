@@ -69,7 +69,7 @@ var th = {
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	btnText: "PLAY", //you can customs playbuton text
 	exitbtn: "yes", //show or not show exitbtn
-	autostart: "yes", //autostart options yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, and loop
+	autostart: "yes",
 	oncepersession: "no", //option for number of times video plays "yes", "no", or "onceonly"
 	exitoncomplete: "no", //option for player to close after video completes. "yes" or "no"
 	path: "talkingheads", //path to where the files are located
