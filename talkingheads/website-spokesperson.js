@@ -24,7 +24,7 @@ function report() {
 		console.log('Not going to play');
 		return;
 	}
-	var str = objToString(th, 3);
+	var str = objToString(th.player, 3);
 	str.replace(/,/g, "\n");
 
 	function objToString(obj, ndeep) {
@@ -47,7 +47,7 @@ function report() {
 		}
 	}
 	document.getElementById('reporter').innerHTML = str;
-	console.log(th.video);
+	console.log( th.player.mute() );
 }
 var th = {
 	responsive: false, //You must place <div id:"wthvideo"></div> inside the div you want the video to be in.
@@ -61,7 +61,7 @@ var th = {
 	divTop: "0",
 	bottom: "auto",
 	centeroffset: "-160", //if centering on page negative numbers are left and positive numbers are right
-	bgColor: "rgba(61, 156, 235,0.3)", //the color of the player bar.
+	bgColor: "rgba(200, 200, 255,0.5)", //the color of the player bar.
 	textColor: "#0474ff", //set color of text
 	volume: "0.8",
 	delay: 500, //delay start of video 1000= 1 second
@@ -69,7 +69,7 @@ var th = {
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	btnText: "PLAY", //you can customs playbuton text
 	exitbtn: "yes", //show or not show exitbtn
-	autostart: "no",
+	autostart: "onceonlythenmute", //yes, no, mute,loop, slide, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute
 	oncepersession: "no", //option for number of times video plays "yes", "no", or "onceonly"
 	exitoncomplete: "no", //option for player to close after video completes. "yes" or "no"
 	path: "talkingheads", //path to where the files are located
@@ -112,7 +112,8 @@ var th = {
 		playBtn: "",
 		restartBtn: "",
 		muteBtn: "",
-		closeBtn: ""
+		closeBtn: "",
+		startBtn: ""
 	},
 	playerBar: {
 		width: function () {
@@ -236,13 +237,29 @@ var th = {
 		},
 		mute: function () {
 			'use strict';
-			if (th.autostart === "mute") {
-				return true;
+			console.log( "mute? " + th.autostart.indexOf("mute"));
+			if (th.autostart.indexOf("mute") > 0) {
+				th.autostart = "yes";
 			}
-			if (th.autostart === "oncethenmute" && th.storage.session === true) {
-				return true;
-			} else {
-				return false;
+			switch (th.autostart) {
+				case "mute":
+					return true;
+				case "oncethenmute":
+					if (th.storage.local === true) {
+						return true;
+					} else {
+						return false;
+					}
+					break;
+				case "onceonlythenmute":
+					if (th.storage.storage === true) {
+						return true;
+					} else {
+						return false;
+					}
+					break;
+				default:
+					return false;
 			}
 		},
 		autostart: function () {
@@ -318,7 +335,7 @@ function createPlayer() {
 		if (th.toLoop) {
 			th.video.loop = true;
 		}
-		if (th.toMute) {
+		if (th.player.mute()) {
 			th.video.muted = true;
 			if (th.autostart !== "loop") {
 				startBtnCreate();
@@ -331,7 +348,7 @@ function createPlayer() {
 		}
 		th.holder.appendChild(th.video);
 		var p = document.createElement("p");
-		p.innerHTML = "Your Browser does not support the <video> tag";
+		p.innerHTML = "Your Browser does not support the video tag";
 		th.video.appendChild(p);
 	}
 	//-----------------------------------------------CREATE Controlls--------------	
@@ -441,8 +458,8 @@ function createPlayer() {
 	}
 	//-----------------------------------------------Start Playing--------------	
 	function playSpokesperson() {
-		console.log(th.autostart);
-		if (th.autostart === "yes" || th.toLoop === true) {
+		console.log(th.autostart + "-" + th.toMute);
+		if (th.autostart === "yes" || th.toLoop === true || th.autostart === "mute") {
 			var promise = th.video.play();
 			if (promise !== undefined) {
 				promise.then(_ => {
@@ -453,16 +470,13 @@ function createPlayer() {
 					goPoster();
 				});
 			}
-		}
-		if (th.autostart === "yes" || th.toLoop === true) {
-			th.video.autoplay = true;
-			th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
-			th.controls.playerBar.style.opacity = "1";
+			if (th.player.mute) {
+				startBtnCreate();
+			}
 			startPlaying();
 		} else {
 			goPoster();
 		}
-
 	}
 
 	function startPlaying() {
@@ -493,35 +507,40 @@ function createPlayer() {
 	}
 
 	function startBtnCreate() {
-		console.log('create startbtn');
-		th.btn.startBtn = document.createElement("h3");
-		th.btn.startBtn.id = "click-to-play";
-		th.btn.startBtn.alt = "Click to Play";
-		th.btn.startBtn.style.margin = "-60% auto 0";
-		th.btn.startBtn.style.maxWidth = "50%";
-		th.btn.startBtn.style.position = "relative";
-		th.btn.startBtn.style.textAlign = "center";
-		th.btn.startBtn.style.cursor = "pointer";
-		th.btn.startBtn.style.zIndex = 100;
-		th.btn.startBtn.style.background = th.bgColor;
-		th.btn.startBtn.style.color = th.textColor;
-		th.btn.startBtn.style.border = th.textColor + " thin solid";
-		th.btn.startBtn.style.borderRadius = "8px";
-		th.btn.startBtn.style.padding = ".25rem";
-		th.holder.appendChild(th.btn.startBtn);
-		var t = document.createTextNode(th.btnText);
-		th.btn.startBtn.appendChild(t);
+		console.log('startbtnCreate');
+		if (th.btn.startBtn === "") {
+			th.btn.startBtn = document.createElement("h3");
+			th.btn.startBtn.id = "click-to-play";
+			th.btn.startBtn.alt = "Click to Play";
+			th.btn.startBtn.style.margin = "-60% auto 0";
+			th.btn.startBtn.style.maxWidth = "50%";
+			th.btn.startBtn.style.position = "relative";
+			th.btn.startBtn.style.textAlign = "center";
+			th.btn.startBtn.style.cursor = "pointer";
+			th.btn.startBtn.style.zIndex = 100;
+			th.btn.startBtn.style.background = th.bgColor;
+			th.btn.startBtn.style.color = th.textColor;
+			th.btn.startBtn.style.border = th.textColor + " thin solid";
+			th.btn.startBtn.style.borderRadius = "8px";
+			th.btn.startBtn.style.padding = ".25rem";
+			th.holder.appendChild(th.btn.startBtn);
+			var t = document.createTextNode(th.btnText);
+			th.btn.startBtn.appendChild(t);
+		} else {
+			th.btn.startBtn.style.visibility = "visible";
+		}
 	}
 
 	function goPoster() {
+		console.log("poster");
 		th.video.removeAttribute("autostart");
 		th.video.load();
 		th.btn.playBtn.src = th.paths.button() + "playBtn.png";
-		if (th.btn.startBtn) {
+		if (!th.btn.startBtn) {
+			startBtnCreate();
+		} else {
 			th.btn.startBtn.style.visibility = "visible";
 			console.log('elementExists');
-		} else {
-			startBtnCreate();
 		}
 	}
 
@@ -598,6 +617,11 @@ function createPlayer() {
 				case "talkinghead":
 				case "click-to-play":
 				case "playBtn":
+					console.log(th.volume + "--" + th.player.volume);
+					if (th.player.mute) {
+						th.player.mute = false;
+						th.video.load();
+					}
 					playToggle();
 					break;
 			}
@@ -609,6 +633,7 @@ function createPlayer() {
 		if (th.exitoncomplete === "yes") {
 			closePlayer();
 		} else {
+			startBtnCreate();
 			goPoster();
 		}
 	}
@@ -640,9 +665,8 @@ function createPlayer() {
 
 	function playToggle() {
 		if (th.video.paused) {
-			try {
-				document.getElementById("click-to-play").parentNode.removeChild(document.getElementById("click-to-play"));
-			} catch (err) {}
+			console.log(th.video.volume);
+			th.btn.startBtn.style.visibility = "hidden";
 			th.video.play();
 			th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
 			th.controls.playerBar.style.opacity = "1";
