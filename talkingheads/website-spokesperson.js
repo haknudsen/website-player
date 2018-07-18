@@ -12,7 +12,6 @@ if (window.addEventListener) {
 
 function report() {
 	"use strict";
-	/*	console.log(th.controls.playerBar.playBtn);*/
 	if (th.device && !th.showDevice) {
 		return;
 	}
@@ -47,7 +46,7 @@ function report() {
 		}
 	}
 	document.getElementById('reporter').value = str;
-	console.log(th.autostart);
+	console.log("main reporter");
 }
 var th = {
 	responsive: false, //You must place <div id:"wthvideo"></div> inside the div you want the video to be in.
@@ -402,6 +401,8 @@ function createPlayer() {
 				break;
 			default:
 				console.log("controlbar not set properly");
+				th.controls.playerBar.style.marginTop = th.playerBar.height();
+				break;
 		}
 		th.controls.appendChild(th.controls.playerBar);
 		var i = 0;
@@ -619,7 +620,6 @@ function createPlayer() {
 
 	function doSomething(e) {
 		if (e.target !== e.currentTarget) {
-			console.log('click=' + e.target.id);
 			switch (e.target.id) {
 				case "muteBtn":
 					muteToggle();
