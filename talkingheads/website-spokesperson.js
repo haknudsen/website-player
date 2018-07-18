@@ -39,14 +39,14 @@ function report() {
 			case "object":
 				var indent = Array(ndeep || 1).join('\t'),
 					isArray = Array.isArray(obj);
-				return '[' [+isArray] + Object.keys(obj).map(function (key) {
-					return '\n\t' + indent + key + ': ' + objToString(obj[key], (ndeep || 1) + 1);
-				}).join('\n') + '\n' + indent + ']' [+isArray];
+				return [+isArray] + Object.keys(obj).map(function (key) {
+					return '\t' + indent + key + ': ' + objToString(obj[key], (ndeep || 1) + 1);
+				}).join('\n') + '\n' + indent +  [+isArray];
 			default:
 				return obj.toString();
 		}
 	}
-	document.getElementById('reporter').innerHTML = str;
+	document.getElementById('reporter').value = str;
 	console.log( th.player.mute() );
 }
 var th = {
@@ -69,8 +69,7 @@ var th = {
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	btnText: "PLAY", //you can customs playbuton text
 	exitbtn: "yes", //show or not show exitbtn
-	autostart: "onceonlythenmute", //yes, no, mute,loop, slide, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute
-	oncepersession: "no", //option for number of times video plays "yes", "no", or "onceonly"
+	autostart: "onceonlythenmute", //yes, no, mute,loop, slide, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly
 	exitoncomplete: "no", //option for player to close after video completes. "yes" or "no"
 	path: "talkingheads", //path to where the files are located
 	actorpic: "slider", //transparent gif
@@ -272,9 +271,9 @@ var th = {
 		},
 		toPlay: function () {
 			'use strict';
-			if (th.storage.local && th.oncepersession === "yes") {
+			if (th.storage.local && th.autostart === "once") {
 				return false;
-			} else if (th.storage.session && th.oncepersession === "onceonly") {
+			} else if (th.storage.session && th.autostart === "onceonly") {
 				return false;
 			} else {
 				return true;
@@ -471,6 +470,7 @@ function createPlayer() {
 				});
 			}
 			if (th.player.mute) {
+				th.video.muted = true;
 				startBtnCreate();
 			}
 			startPlaying();
