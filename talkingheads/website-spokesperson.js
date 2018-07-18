@@ -41,13 +41,13 @@ function report() {
 					isArray = Array.isArray(obj);
 				return [+isArray] + Object.keys(obj).map(function (key) {
 					return '\t' + indent + key + ': ' + objToString(obj[key], (ndeep || 1) + 1);
-				}).join('\n') + '\n' + indent +  [+isArray];
+				}).join('\n') + '\n' + indent + [+isArray];
 			default:
 				return obj.toString();
 		}
 	}
 	document.getElementById('reporter').value = str;
-	console.log( th.player.mute() );
+	console.log("mute=" + th.player.mute());
 }
 var th = {
 	responsive: false, //You must place <div id:"wthvideo"></div> inside the div you want the video to be in.
@@ -69,7 +69,7 @@ var th = {
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	btnText: "PLAY", //you can customs playbuton text
 	exitbtn: "yes", //show or not show exitbtn
-	autostart: "onceonlythenmute", //yes, no, mute,loop, slide, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly
+	autostart: "loop", //yes, no, mute,loop, slide, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly
 	exitoncomplete: "no", //option for player to close after video completes. "yes" or "no"
 	path: "talkingheads", //path to where the files are located
 	actorpic: "slider", //transparent gif
@@ -79,8 +79,6 @@ var th = {
 	overflow: "hidden",
 	myPause: false,
 	vendors: ["-moz-", "-webkit-", "-o-", "-ms-", "-khtml-", ""],
-	toLoop: false,
-	toMute: false,
 	toPlay: true,
 	canvasSupported: !!window.HTMLCanvasElement,
 	holder: "true",
@@ -229,14 +227,14 @@ var th = {
 	player: {
 		loop: function () {
 			'use strict';
-			if (th.autostart === "loop") {
+			if (th.player.mute === "mute" || th.autostart === "loop") {
 				return true;
+			} else {
+				return false;
 			}
-			return false;
 		},
 		mute: function () {
 			'use strict';
-			console.log( "mute? " + th.autostart.indexOf("mute"));
 			if (th.autostart.indexOf("mute") > 0) {
 				th.autostart = "yes";
 			}
@@ -331,7 +329,7 @@ function createPlayer() {
 		}
 		th.video.volume = th.volume;
 		th.video.style.width = th.width + "px";
-		if (th.toLoop) {
+		if (th.player.loop) {
 			th.video.loop = true;
 		}
 		if (th.player.mute()) {
@@ -457,8 +455,7 @@ function createPlayer() {
 	}
 	//-----------------------------------------------Start Playing--------------	
 	function playSpokesperson() {
-		console.log(th.autostart + "-" + th.toMute);
-		if (th.autostart === "yes" || th.toLoop === true || th.autostart === "mute") {
+		if (th.autostart === "yes" || th.player.loop === true || th.autostart === "mute") {
 			var promise = th.video.play();
 			if (promise !== undefined) {
 				promise.then(_ => {
@@ -508,6 +505,8 @@ function createPlayer() {
 
 	function startBtnCreate() {
 		console.log('startbtnCreate');
+		console.log("autostart=" + th.autostart);
+		console.log("mute= " + th.player.mute());
 		if (th.btn.startBtn === "") {
 			th.btn.startBtn = document.createElement("h3");
 			th.btn.startBtn.id = "click-to-play";
@@ -620,6 +619,7 @@ function createPlayer() {
 					console.log(th.volume + "--" + th.player.volume);
 					if (th.player.mute) {
 						th.player.mute = false;
+						th.video.muted = false;
 						th.video.load();
 					}
 					playToggle();
@@ -632,7 +632,7 @@ function createPlayer() {
 	function videoEnded() {
 		if (th.exitoncomplete === "yes") {
 			closePlayer();
-		} else {
+		} else if (th.player.loop !== true){
 			startBtnCreate();
 			goPoster();
 		}
