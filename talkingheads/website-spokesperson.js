@@ -47,7 +47,7 @@ function report() {
 		}
 	}
 	document.getElementById('reporter').value = str;
-	console.log(th.player.loop());
+	console.log(th.autostart);
 }
 var th = {
 	responsive: false, //You must place <div id:"wthvideo"></div> inside the div you want the video to be in.
@@ -69,7 +69,7 @@ var th = {
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	btnText: "PLAY", //you can customs playbuton text
 	exitbtn: "yes", //show or not show exitbtn
-	autostart: "goStop", //yes, no, mute,loop, slide, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop
+	autostart: "no", //yes, no, mute,loop, slide, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop
 	exitoncomplete: "no", //option for player to close after video completes. "yes" or "no"
 	path: "talkingheads", //path to where the files are located
 	actorpic: "slider", //transparent gif
@@ -260,7 +260,6 @@ var th = {
 		},
 		autostart: function () {
 			'use strict';
-			console.log("mute=" + this.mute());
 			if (this.loop() || this.mute || this.goStop) {
 				return true;
 			} else {
@@ -342,12 +341,6 @@ function createPlayer() {
 		}
 		th.video.volume = th.volume;
 		th.video.style.width = th.width + "px";
-		if (th.player.mute()) {
-			th.video.muted = true;
-			if (th.video.loop()) {
-				startBtnCreate();
-			}
-		}
 		if (th.canvasSupported) {
 			th.video.style.height = th.height * 2 + "px";
 		} else {
@@ -465,7 +458,7 @@ function createPlayer() {
 	}
 	//-----------------------------------------------Start Playing--------------	
 	function playSpokesperson() {
-		if (th.player.autostart) {
+		if (th.player.autostart()) {
 			var promise = th.video.play();
 			if (promise !== undefined) {
 				promise.then(_ => {
@@ -479,226 +472,225 @@ function createPlayer() {
 			if (th.player.mute()) {
 				th.video.muted = true;
 				startBtnCreate();
-			}
-			startPlaying();
-		} else {
-			goPoster();
-		}
-	}
-
-	function startPlaying() {
-		if (th.canvas.main && th.canvas.main.getContext) {
-			var ctx = th.canvas.main.getContext("2d");
-			if (ctx) {
-				var playingS = setInterval(function () {
-					showVideo();
-				}, 16);
+			} else if (th.autostart === "no") {
+				goPoster();
+			} else {
+				startPlaying();
 			}
 		}
 	}
-
-	function showVideo() {
-		try {
-			var ctx = th.canvas.main.getContext("2d"),
-				srcVid = th.video,
-				buffer = th.canvas.buffer.getContext("2d");
-			buffer.drawImage(srcVid, 0, 0);
-			var image = buffer.getImageData(0, 0, th.width, th.height),
-				imageData = image.data,
-				alphaData = buffer.getImageData(0, th.height, th.width, th.height).data;
-			for (var i = 3, len = imageData.length; i < len; i = i + 4) {
-				imageData[i] = alphaData[i - 1];
-			}
-			ctx.putImageData(image, 0, 0, 0, 0, th.width, th.height);
-		} catch (err) {}
-	}
-
-	function startBtnCreate() {
-		if (th.btn.startBtn === "") {
-			th.btn.startBtn = document.createElement("h3");
-			th.btn.startBtn.id = "click-to-play";
-			th.btn.startBtn.alt = "Click to Play";
-			th.btn.startBtn.style.margin = "-60% auto 0";
-			th.btn.startBtn.style.maxWidth = "50%";
-			th.btn.startBtn.style.position = "relative";
-			th.btn.startBtn.style.textAlign = "center";
-			th.btn.startBtn.style.cursor = "pointer";
-			th.btn.startBtn.style.zIndex = 100;
-			th.btn.startBtn.style.background = th.bgColor;
-			th.btn.startBtn.style.color = th.textColor;
-			th.btn.startBtn.style.border = th.textColor + " thin solid";
-			th.btn.startBtn.style.borderRadius = "8px";
-			th.btn.startBtn.style.padding = ".25rem";
-			th.holder.appendChild(th.btn.startBtn);
-			var t = document.createTextNode(th.btnText);
-			th.btn.startBtn.appendChild(t);
-		} else {
-			th.btn.startBtn.style.visibility = "visible";
-		}
-	}
-
-	function goPoster() {
-		console.log("poster");
-		th.video.removeAttribute("autostart");
-		th.video.load();
-		th.btn.playBtn.src = th.paths.button() + "playBtn.png";
-		if (!th.btn.startBtn) {
-			startBtnCreate();
-		} else {
-			th.btn.startBtn.style.visibility = "visible";
-			console.log('elementExists');
-		}
-	}
-
-	function addListeners() {
-		th.holder.addEventListener("click", doSomething, false);
-		th.holder.addEventListener("mouseover", overVideo, false);
-		th.holder.addEventListener("mouseout", outVideo, false);
-		th.video.addEventListener("ended", videoEnded, false);
-		if (th.exitoncomplete === "yes") {
-			th.video.getElementById('talkinghead').addEventListener("ended", closePlayer, false);
-		}
-		console.log("goStop=" + th.player.goStop());
-		if (th.player.goStop()) {
-			th.video.ontimeupdate = function () {
-				timeUpdate();
-			};
-		}
-	}
-
-	function timeUpdate() {
-		console.log("time update");
-		var theCurrentFrame = Math.floor(th.video.currentTime * th.player.frameRate);
-		if (theCurrentFrame >= th.goStop && theCurrentFrame <= th.goStop + 10) {
-			th.btn.playBtn.src = th.paths.button() + "playBtn.png";
-			th.video.pause();
-			th.video.ontimeupdate = null;
-			th.autostart = "yes";
-			startBtnCreate();
-		}
-	}
-
-	function outVideo(e) {
-		if (e.target !== e.currentTarget) {
-			switch (e.target.id) {
-				case "talkingCanvas":
-					th.controls.playerBar.style.marginTop = "0px";
-					break;
-				case "playBtn":
-				case "muteBtn":
-				case "restartBtn":
-				case "closeBtn":
-				case "htmlClose":
-					e.target.style.opacity = 1;
-					break;
+		function startPlaying() {
+			if (th.canvas.main && th.canvas.main.getContext) {
+				var ctx = th.canvas.main.getContext("2d");
+				if (ctx) {
+					var playingS = setInterval(function () {
+						showVideo();
+					}, 16);
+				}
 			}
 		}
-		e.stopPropagation();
-	}
 
-	function overVideo(e) {
-		if (e.target !== e.currentTarget) {
-			switch (e.target.id) {
-				case "talkingCanvas":
-					th.controls.playerBar.style.marginTop = th.playerBar.margin;
-					break;
-				case "playBtn":
-				case "muteBtn":
-				case "restartBtn":
-				case "closeBtn":
-				case "htmlClose":
-					e.target.style.opacity = 0.5;
-					th.controls.playerBar.style.marginTop = th.playerBar.margin;
-					break;
-			}
-		}
-		e.stopPropagation();
-	}
-
-	function doSomething(e) {
-		if (e.target !== e.currentTarget) {
-			console.log('click=' + e.target.id);
-			switch (e.target.id) {
-				case "muteBtn":
-					muteToggle();
-					break;
-				case "restartBtn":
-					restartClick();
-					break;
-				case "closeBtn":
-				case "htmlClose":
-					closePlayer();
-					break;
-				case "talkingCanvas":
-				case "talkinghead":
-				case "click-to-play":
-				case "playBtn":
-					if (th.player.goStop()) {
-						th.autostart = "yes";
-						playToggle();
-					}
-					if (th.player.mute) {
-						th.player.mute = false;
-						th.video.muted = false;
-						th.video.load();
-					}
-					playToggle();
-					break;
-			}
-		}
-		e.stopPropagation();
-	}
-
-	function videoEnded() {
-		if (th.exitoncomplete === "yes") {
-			closePlayer();
-		} else if (th.player.loop() !== true) {
-			startBtnCreate();
-			goPoster();
-		}
-	}
-
-	function closePlayer() {
-		th.video.pause();
-		//		clearInterval(playingS);
-		try {
-			document.body.removeChild(document.getElementById("wthvideo"));
-		} catch (err) {}
-		return;
-	}
-
-	function muteToggle() {
-		if (th.video.muted) {
-			th.video.muted = false;
-			th.btn.muteBtn.src = th.paths.button() + "muteBtn.png";
-		} else {
-			th.btn.muteBtn.src = th.paths.button() + "unmuteBtn.png";
-			th.video.muted = true;
-		}
-	}
-
-	function restartClick() {
-		th.video.currentTime = 0;
-		th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
-		th.video.play();
-	}
-
-	function playToggle() {
-		if (th.video.paused) {
+		function showVideo() {
 			try {
-				th.btn.startBtn.style.visibility = "hidden";
-			} catch (err) {
-				console.log("error on startBtn");
+				var ctx = th.canvas.main.getContext("2d"),
+					srcVid = th.video,
+					buffer = th.canvas.buffer.getContext("2d");
+				buffer.drawImage(srcVid, 0, 0);
+				var image = buffer.getImageData(0, 0, th.width, th.height),
+					imageData = image.data,
+					alphaData = buffer.getImageData(0, th.height, th.width, th.height).data;
+				for (var i = 3, len = imageData.length; i < len; i = i + 4) {
+					imageData[i] = alphaData[i - 1];
+				}
+				ctx.putImageData(image, 0, 0, 0, 0, th.width, th.height);
+			} catch (err) {}
+		}
+
+		function startBtnCreate() {
+			if (th.btn.startBtn === "") {
+				th.btn.startBtn = document.createElement("h3");
+				th.btn.startBtn.id = "click-to-play";
+				th.btn.startBtn.alt = "Click to Play";
+				th.btn.startBtn.style.margin = "-60% auto 0";
+				th.btn.startBtn.style.maxWidth = "50%";
+				th.btn.startBtn.style.position = "relative";
+				th.btn.startBtn.style.textAlign = "center";
+				th.btn.startBtn.style.cursor = "pointer";
+				th.btn.startBtn.style.zIndex = 100;
+				th.btn.startBtn.style.background = th.bgColor;
+				th.btn.startBtn.style.color = th.textColor;
+				th.btn.startBtn.style.border = th.textColor + " thin solid";
+				th.btn.startBtn.style.borderRadius = "8px";
+				th.btn.startBtn.style.padding = ".25rem";
+				th.holder.appendChild(th.btn.startBtn);
+				var t = document.createTextNode(th.btnText);
+				th.btn.startBtn.appendChild(t);
+			} else {
+				th.btn.startBtn.style.visibility = "visible";
 			}
-			th.video.play();
-			th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
-			th.controls.playerBar.style.opacity = "1";
-		} else {
+		}
+
+		function goPoster() {
+			console.log("poster");
+			th.video.removeAttribute("autostart");
+			document.getElementById('wthvideo').style.display = "block";
+			th.video.load();
 			th.btn.playBtn.src = th.paths.button() + "playBtn.png";
+			if (!th.btn.startBtn) {
+				startBtnCreate();
+			} else {
+				th.btn.startBtn.style.visibility = "visible";
+				console.log('elementExists');
+			}
+		}
+
+		function addListeners() {
+			th.holder.addEventListener("click", doSomething, false);
+			th.holder.addEventListener("mouseover", overVideo, false);
+			th.holder.addEventListener("mouseout", outVideo, false);
+			th.video.addEventListener("ended", videoEnded, false);
+			if (th.exitoncomplete === "yes") {
+				th.video.getElementById('talkinghead').addEventListener("ended", closePlayer, false);
+			}
+			if (th.player.goStop()) {
+				th.video.ontimeupdate = function () {
+					timeUpdate();
+				};
+			}
+		}
+
+		function timeUpdate() {
+			var theCurrentFrame = Math.floor(th.video.currentTime * th.player.frameRate);
+			if (theCurrentFrame >= th.goStop && theCurrentFrame <= th.goStop + 10) {
+				th.btn.playBtn.src = th.paths.button() + "playBtn.png";
+				th.video.pause();
+				th.video.ontimeupdate = null;
+				th.autostart = "yes";
+				startBtnCreate();
+			}
+		}
+
+		function outVideo(e) {
+			if (e.target !== e.currentTarget) {
+				switch (e.target.id) {
+					case "talkingCanvas":
+						th.controls.playerBar.style.marginTop = "0px";
+						break;
+					case "playBtn":
+					case "muteBtn":
+					case "restartBtn":
+					case "closeBtn":
+					case "htmlClose":
+						e.target.style.opacity = 1;
+						break;
+				}
+			}
+			e.stopPropagation();
+		}
+
+		function overVideo(e) {
+			if (e.target !== e.currentTarget) {
+				switch (e.target.id) {
+					case "talkingCanvas":
+						th.controls.playerBar.style.marginTop = th.playerBar.margin;
+						break;
+					case "playBtn":
+					case "muteBtn":
+					case "restartBtn":
+					case "closeBtn":
+					case "htmlClose":
+						e.target.style.opacity = 0.5;
+						th.controls.playerBar.style.marginTop = th.playerBar.margin;
+						break;
+				}
+			}
+			e.stopPropagation();
+		}
+
+		function doSomething(e) {
+			if (e.target !== e.currentTarget) {
+				console.log('click=' + e.target.id);
+				switch (e.target.id) {
+					case "muteBtn":
+						muteToggle();
+						break;
+					case "restartBtn":
+						restartClick();
+						break;
+					case "closeBtn":
+					case "htmlClose":
+						closePlayer();
+						break;
+					case "talkingCanvas":
+					case "talkinghead":
+					case "click-to-play":
+					case "playBtn":
+						if (th.player.goStop()) {
+							th.autostart = "yes";
+							playToggle();
+						}
+						if (th.player.mute) {
+							th.player.mute = false;
+							th.video.muted = false;
+							th.video.load();
+						}
+						playToggle();
+						break;
+				}
+			}
+			e.stopPropagation();
+		}
+
+		function videoEnded() {
+			if (th.exitoncomplete === "yes") {
+				closePlayer();
+			} else if (th.player.loop() !== true) {
+				startBtnCreate();
+				goPoster();
+			}
+		}
+
+		function closePlayer() {
 			th.video.pause();
+			//		clearInterval(playingS);
+			try {
+				document.body.removeChild(document.getElementById("wthvideo"));
+			} catch (err) {}
+			return;
+		}
+
+		function muteToggle() {
+			if (th.video.muted) {
+				th.video.muted = false;
+				th.btn.muteBtn.src = th.paths.button() + "muteBtn.png";
+			} else {
+				th.btn.muteBtn.src = th.paths.button() + "unmuteBtn.png";
+				th.video.muted = true;
+			}
+		}
+
+		function restartClick() {
+			th.video.currentTime = 0;
+			th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
+			th.video.play();
+		}
+
+		function playToggle() {
+			if (th.video.paused) {
+				try {
+					th.btn.startBtn.style.visibility = "hidden";
+				} catch (err) {
+					console.log("error on startBtn");
+				}
+				th.video.play();
+				th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
+				th.controls.playerBar.style.opacity = "1";
+			} else {
+				th.btn.playBtn.src = th.paths.button() + "playBtn.png";
+				th.video.pause();
+			}
 		}
 	}
-}
 
-// Copyright 2018 Website Talking Heads
-//am I still working?
+	// Copyright 2018 Website Talking Heads
+	//am I still working?
