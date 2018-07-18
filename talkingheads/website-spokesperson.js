@@ -47,7 +47,7 @@ function report() {
 		}
 	}
 	document.getElementById('reporter').value = str;
-	console.log("mute=" + th.player.mute());
+	console.log(th.player.loop());
 }
 var th = {
 	responsive: false, //You must place <div id:"wthvideo"></div> inside the div you want the video to be in.
@@ -65,11 +65,11 @@ var th = {
 	textColor: "#0474ff", //set color of text
 	volume: "0.8",
 	delay: 500, //delay start of video 1000= 1 second
-	goStop: "0",
+	goStop: "1",
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	btnText: "PLAY", //you can customs playbuton text
 	exitbtn: "yes", //show or not show exitbtn
-	autostart: "loop", //yes, no, mute,loop, slide, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly
+	autostart: "goStop", //yes, no, mute,loop, slide, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop
 	exitoncomplete: "no", //option for player to close after video completes. "yes" or "no"
 	path: "talkingheads", //path to where the files are located
 	actorpic: "slider", //transparent gif
@@ -77,7 +77,6 @@ var th = {
 	h264: "slider", //Just name,not extension h264
 	// end Main Player Vars--------------------------------------------------------------------------------------
 	overflow: "hidden",
-	myPause: false,
 	vendors: ["-moz-", "-webkit-", "-o-", "-ms-", "-khtml-", ""],
 	toPlay: true,
 	canvasSupported: !!window.HTMLCanvasElement,
@@ -235,14 +234,13 @@ var th = {
 		},
 		mute: function () {
 			'use strict';
-			if (th.autostart.indexOf("mute") > 0) {
-				th.autostart = "yes";
-			}
 			switch (th.autostart) {
 				case "mute":
+					th.autostart = "yes";
 					return true;
 				case "oncethenmute":
 					if (th.storage.local === true) {
+						th.autostart = "yes";
 						return true;
 					} else {
 						return false;
@@ -250,6 +248,7 @@ var th = {
 					break;
 				case "onceonlythenmute":
 					if (th.storage.storage === true) {
+						th.autostart = "yes";
 						return true;
 					} else {
 						return false;
@@ -261,7 +260,17 @@ var th = {
 		},
 		autostart: function () {
 			'use strict';
-			if (this.loop || this.mute) {
+			console.log("mute=" + this.mute());
+			if (this.loop() || this.mute || this.goStop) {
+				return true;
+			} else {
+				return false;
+			}
+		},
+		frameRate: 30,
+		goStop: function () {
+			'use strict';
+			if (th.autostart === "goStop") {
 				return true;
 			} else {
 				return false;
@@ -318,8 +327,12 @@ function createPlayer() {
 		th.video = document.createElement("VIDEO");
 		th.video.id = "talkinghead";
 		th.video.setAttribute("playsinline", "");
-		if (th.autostart === "yes") {
+		if (th.player.autostart()) {
 			th.video.setAttribute("autostart", "");
+		}
+		if (th.player.loop()) {
+			th.video.setAttribute("loop", "");
+			th.video.loop = true;
 		}
 		th.video.src = th.paths.video();
 		th.video.zIndex = 1;
@@ -329,12 +342,9 @@ function createPlayer() {
 		}
 		th.video.volume = th.volume;
 		th.video.style.width = th.width + "px";
-		if (th.player.loop) {
-			th.video.loop = true;
-		}
 		if (th.player.mute()) {
 			th.video.muted = true;
-			if (th.autostart !== "loop") {
+			if (th.video.loop()) {
 				startBtnCreate();
 			}
 		}
@@ -345,7 +355,7 @@ function createPlayer() {
 		}
 		th.holder.appendChild(th.video);
 		var p = document.createElement("p");
-		p.innerHTML = "Your Browser does not support the video tag";
+		p.innerHTML = 'Your Browser does not support the video tag.  <a href="https://www.websitetalkingheads.com/">Learn More</a>';
 		th.video.appendChild(p);
 	}
 	//-----------------------------------------------CREATE Controlls--------------	
@@ -455,7 +465,7 @@ function createPlayer() {
 	}
 	//-----------------------------------------------Start Playing--------------	
 	function playSpokesperson() {
-		if (th.autostart === "yes" || th.player.loop === true || th.autostart === "mute") {
+		if (th.player.autostart) {
 			var promise = th.video.play();
 			if (promise !== undefined) {
 				promise.then(_ => {
@@ -466,7 +476,7 @@ function createPlayer() {
 					goPoster();
 				});
 			}
-			if (th.player.mute) {
+			if (th.player.mute()) {
 				th.video.muted = true;
 				startBtnCreate();
 			}
@@ -504,9 +514,6 @@ function createPlayer() {
 	}
 
 	function startBtnCreate() {
-		console.log('startbtnCreate');
-		console.log("autostart=" + th.autostart);
-		console.log("mute= " + th.player.mute());
 		if (th.btn.startBtn === "") {
 			th.btn.startBtn = document.createElement("h3");
 			th.btn.startBtn.id = "click-to-play";
@@ -551,13 +558,23 @@ function createPlayer() {
 		if (th.exitoncomplete === "yes") {
 			th.video.getElementById('talkinghead').addEventListener("ended", closePlayer, false);
 		}
-		if (th.goStop > 0) {
-			var frameRate = 30;
-			th.player.ontimeupdate = function () {
-				if (myPause === false) {
-					timeUpdate();
-				}
+		console.log("goStop=" + th.player.goStop());
+		if (th.player.goStop()) {
+			th.video.ontimeupdate = function () {
+				timeUpdate();
 			};
+		}
+	}
+
+	function timeUpdate() {
+		console.log("time update");
+		var theCurrentFrame = Math.floor(th.video.currentTime * th.player.frameRate);
+		if (theCurrentFrame >= th.goStop && theCurrentFrame <= th.goStop + 10) {
+			th.btn.playBtn.src = th.paths.button() + "playBtn.png";
+			th.video.pause();
+			th.video.ontimeupdate = null;
+			th.autostart = "yes";
+			startBtnCreate();
 		}
 	}
 
@@ -616,7 +633,10 @@ function createPlayer() {
 				case "talkinghead":
 				case "click-to-play":
 				case "playBtn":
-					console.log(th.volume + "--" + th.player.volume);
+					if (th.player.goStop()) {
+						th.autostart = "yes";
+						playToggle();
+					}
 					if (th.player.mute) {
 						th.player.mute = false;
 						th.video.muted = false;
@@ -632,7 +652,7 @@ function createPlayer() {
 	function videoEnded() {
 		if (th.exitoncomplete === "yes") {
 			closePlayer();
-		} else if (th.player.loop !== true){
+		} else if (th.player.loop() !== true) {
 			startBtnCreate();
 			goPoster();
 		}
@@ -665,8 +685,11 @@ function createPlayer() {
 
 	function playToggle() {
 		if (th.video.paused) {
-			console.log(th.video.volume);
-			th.btn.startBtn.style.visibility = "hidden";
+			try {
+				th.btn.startBtn.style.visibility = "hidden";
+			} catch (err) {
+				console.log("error on startBtn");
+			}
 			th.video.play();
 			th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
 			th.controls.playerBar.style.opacity = "1";
@@ -677,150 +700,4 @@ function createPlayer() {
 	}
 }
 
-
-/*
-
-	function HTML5Autostart() {
-		if (autostart === "yes" || toLoop === true) {
-			var promise = th.video.play();
-			if (promise !== undefined) {
-				promise.then(_ => {
-					th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
-				}).catch(error => {
-					console.log('Play Error');
-					goPoster();
-				});
-			}
-		}
-		if (autostart === "yes" || toLoop === true) {
-			th.video.autoplay = true;
-			th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
-			th.controls.playerBar.style.opacity = "1";
-			startPlaying();
-		} else {
-			goPoster();
-		}
-		if (exitoncomplete === "yes") {
-			th.video.addEventListener("ended", closePlayer, false);
-		}
-	}
-
-
-
-		function timeUpdate() {
-			curTime = th.video.currentTime;
-			var theCurrentFrame = Math.floor(curTime * frameRate);
-			if (theCurrentFrame >= goStop && theCurrentFrame <= goStop + 10) {
-				th.btn.playBtn.src = th.paths.button() + "playBtn.png";
-				myPause = true;
-				th.video.pause();
-				startBtnCreate();
-			}
-		}
-
-
-		try {
-			th.video.addEventListener("ended", videoEnded, false);
-		} catch (err) {}
-	}
-
-
-	function videoEnded() {
-		th.btn.playBtn.src = th.paths.button() + "playBtn.png";
-		if (exitoncomplete === "yes") {
-			closePlayer();
-		} else {
-			th.video.autoplay = false;
-			goPoster();
-		}
-	}
-
-	function playClick() {
-		document.getElementById("click-to-play").style.visibility = "visible";
-		if (!canvasSupported) {
-			th.video.play();
-			th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
-		} else {
-			startPlaying();
-		}
-	}
-
-	function playToggle() {
-		if (th.video.paused) {
-			try {
-				document.getElementById("click-to-play").parentNode.removeChild(document.getElementById("click-to-play"));
-			} catch (err) {}
-			th.video.play();
-			th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
-			th.controls.playerBar.style.opacity = "1";
-		} else {
-			th.btn.playBtn.src = th.paths.button() + "playBtn.png";
-			th.video.pause();
-		}
-	}
-
-	function muteToggle() {
-		if (th.video.muted) {
-			th.video.muted = false;
-			th.btn.muteBtn.src = th.paths.button() + "VolumeBtn.png";
-		} else {
-			th.btn.muteBtn.src = th.paths.button() + "VolumeBtnMute.png";
-			th.video.muted = true;
-		}
-	}
-
-	function restartClick() {
-		th.video.currentTime = 0;
-		th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
-		playClick();
-		th.video.play();
-	}
-
-
-
-	function goPoster() {
-		console.log('goPoster');
-		th.video.load();
-		var elementExists = document.getElementById('click-to-play');
-		if (elementExists) {
-			startBtn.style.visibility = "visible";
-			console.log('elementExists');
-		} else {
-			startBtnCreate();
-		}
-	}
-
-	function startBtnCreate() {
-		console.log('create element');
-		startBtn = document.createElement("h3");
-		startBtn.id = "click-to-play";
-		startBtn.alt = "Click to Play";
-		startBtn.style.margin = "60% auto 0";
-		startBtn.style.maxWidth = "50%";
-		startBtn.style.position = "relative";
-		startBtn.style.textAlign = "center";
-		startBtn.style.cursor = "pointer";
-		startBtn.style.zIndex = 100;
-		startBtn.style.background = bgColor;
-		startBtn.style.color = textColor;
-		startBtn.style.border = textColor + " thin solid";
-		startBtn.style.borderRadius = "8px";
-		startBtn.style.padding = ".25rem";
-		document.getElementById("controls").appendChild(startBtn);
-		var t = document.createTextNode(btnText);
-		startBtn.appendChild(t);
-	}
-
-
-	function removeMuted() {
-		th.btn.muteBtn.src = th.paths.button() + "VolumeBtn.png";
-		toMute = false;
-		toLoop = false;
-		th.video.muted = false;
-		th.video.loop = false;
-		setTimeout(function () {
-			restartClick();
-		}, 150);
-	}
-}*/
 // Copyright 2018 Website Talking Heads
