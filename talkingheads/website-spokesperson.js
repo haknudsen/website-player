@@ -24,7 +24,7 @@ function report() {
 		console.log('Not going to play');
 		return;
 	}
-	var str = objToString(th, 3);
+	var str = objToString(th.player, 3);
 	str.replace(/,/g, "\n");
 
 	function objToString(obj, ndeep) {
@@ -39,15 +39,15 @@ function report() {
 			case "object":
 				var indent = Array(ndeep || 1).join('\t'),
 					isArray = Array.isArray(obj);
-				return '[' [+isArray] + Object.keys(obj).map(function (key) {
-					return '\n\t' + indent + key + ': ' + objToString(obj[key], (ndeep || 1) + 1);
-				}).join('\n') + '\n' + indent + ']' [+isArray];
+				return [+isArray] + Object.keys(obj).map(function (key) {
+					return '\t' + indent + key + ': ' + objToString(obj[key], (ndeep || 1) + 1);
+				}).join('\n') + '\n' + indent + [+isArray];
 			default:
 				return obj.toString();
 		}
 	}
-	document.getElementById('reporter').innerHTML = str;
-	console.log(th.video);
+	document.getElementById('reporter').value = str;
+	console.log(th.player.loop());
 }
 var th = {
 	responsive: false, //You must place <div id:"wthvideo"></div> inside the div you want the video to be in.
@@ -61,16 +61,15 @@ var th = {
 	divTop: "0",
 	bottom: "auto",
 	centeroffset: "-160", //if centering on page negative numbers are left and positive numbers are right
-	bgColor: "rgba(255, 255, 255,0.7)", //the color of the player bar.
+	bgColor: "rgba(200, 200, 255,0.5)", //the color of the player bar.
 	textColor: "#0474ff", //set color of text
 	volume: "0.8",
 	delay: 500, //delay start of video 1000= 1 second
-	goStop: "0",
+	goStop: "1",
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	btnText: "PLAY", //you can customs playbuton text
 	exitbtn: "yes", //show or not show exitbtn
-	autostart: "no", //autostart options yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, and loop
-	oncepersession: "no", //option for number of times video plays "yes", "no", or "onceonly"
+	autostart: "goStop", //yes, no, mute,loop, slide, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop
 	exitoncomplete: "no", //option for player to close after video completes. "yes" or "no"
 	path: "talkingheads", //path to where the files are located
 	actorpic: "slider", //transparent gif
@@ -78,10 +77,7 @@ var th = {
 	h264: "slider", //Just name,not extension h264
 	// end Main Player Vars--------------------------------------------------------------------------------------
 	overflow: "hidden",
-	myPause: false,
 	vendors: ["-moz-", "-webkit-", "-o-", "-ms-", "-khtml-", ""],
-	toLoop: false,
-	toMute: false,
 	toPlay: true,
 	canvasSupported: !!window.HTMLCanvasElement,
 	holder: "true",
@@ -230,25 +226,51 @@ var th = {
 	player: {
 		loop: function () {
 			'use strict';
-			if (th.autostart === "loop") {
-				return true;
-			}
-			return false;
-		},
-		mute: function () {
-			'use strict';
-			if (th.autostart === "mute") {
-				return true;
-			}
-			if (th.autostart === "oncethenmute" && th.storage.session === true) {
+			if (th.player.mute === "mute" || th.autostart === "loop") {
 				return true;
 			} else {
 				return false;
 			}
 		},
+		mute: function () {
+			'use strict';
+			switch (th.autostart) {
+				case "mute":
+					th.autostart = "yes";
+					return true;
+				case "oncethenmute":
+					if (th.storage.local === true) {
+						th.autostart = "yes";
+						return true;
+					} else {
+						return false;
+					}
+					break;
+				case "onceonlythenmute":
+					if (th.storage.storage === true) {
+						th.autostart = "yes";
+						return true;
+					} else {
+						return false;
+					}
+					break;
+				default:
+					return false;
+			}
+		},
 		autostart: function () {
 			'use strict';
-			if (this.loop || this.mute) {
+			console.log("mute=" + this.mute());
+			if (this.loop() || this.mute || this.goStop) {
+				return true;
+			} else {
+				return false;
+			}
+		},
+		frameRate: 30,
+		goStop: function () {
+			'use strict';
+			if (th.autostart === "goStop") {
 				return true;
 			} else {
 				return false;
@@ -256,9 +278,9 @@ var th = {
 		},
 		toPlay: function () {
 			'use strict';
-			if (th.storage.local && th.oncepersession === "yes") {
+			if (th.storage.local && th.autostart === "once") {
 				return false;
-			} else if (th.storage.session && th.oncepersession === "onceonly") {
+			} else if (th.storage.session && th.autostart === "onceonly") {
 				return false;
 			} else {
 				return true;
@@ -305,8 +327,12 @@ function createPlayer() {
 		th.video = document.createElement("VIDEO");
 		th.video.id = "talkinghead";
 		th.video.setAttribute("playsinline", "");
-		if (th.autostart === "yes") {
+		if (th.player.autostart()) {
 			th.video.setAttribute("autostart", "");
+		}
+		if (th.player.loop()) {
+			th.video.setAttribute("loop", "");
+			th.video.loop = true;
 		}
 		th.video.src = th.paths.video();
 		th.video.zIndex = 1;
@@ -316,12 +342,9 @@ function createPlayer() {
 		}
 		th.video.volume = th.volume;
 		th.video.style.width = th.width + "px";
-		if (th.toLoop) {
-			th.video.loop = true;
-		}
-		if (th.toMute) {
+		if (th.player.mute()) {
 			th.video.muted = true;
-			if (th.autostart !== "loop") {
+			if (th.video.loop()) {
 				startBtnCreate();
 			}
 		}
@@ -332,7 +355,7 @@ function createPlayer() {
 		}
 		th.holder.appendChild(th.video);
 		var p = document.createElement("p");
-		p.innerHTML = "Your Browser does not support the <video> tag";
+		p.innerHTML = 'Your Browser does not support the video tag.  <a href="https://www.websitetalkingheads.com/">Learn More</a>';
 		th.video.appendChild(p);
 	}
 	//-----------------------------------------------CREATE Controlls--------------	
@@ -442,26 +465,25 @@ function createPlayer() {
 	}
 	//-----------------------------------------------Start Playing--------------	
 	function playSpokesperson() {
-		if (th.autostart === "yes" || th.toLoop === true) {
+		if (th.player.autostart) {
 			var promise = th.video.play();
 			if (promise !== undefined) {
 				promise.then(_ => {
 					th.controls.playerBar.playBtn = th.paths.button() + "pauseBtn.png";
+					th.controls.playerBar.style.opacity = "1";
 				}).catch(error => {
 					console.log('Play Error');
 					goPoster();
 				});
 			}
-		}
-		if (th.autostart === "yes" || th.toLoop === true) {
-			th.video.autoplay = true;
-			th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
-			th.controls.playerBar.style.opacity = "1";
+			if (th.player.mute()) {
+				th.video.muted = true;
+				startBtnCreate();
+			}
 			startPlaying();
 		} else {
 			goPoster();
 		}
-
 	}
 
 	function startPlaying() {
@@ -492,35 +514,39 @@ function createPlayer() {
 	}
 
 	function startBtnCreate() {
-		console.log('create startbtn');
-		th.btn.startBtn = document.createElement("h3");
-		th.btn.startBtn.id = "click-to-play";
-		th.btn.startBtn.alt = "Click to Play";
-		th.btn.startBtn.style.margin = "-60% auto 0";
-		th.btn.startBtn.style.maxWidth = "50%";
-		th.btn.startBtn.style.position = "relative";
-		th.btn.startBtn.style.textAlign = "center";
-		th.btn.startBtn.style.cursor = "pointer";
-		th.btn.startBtn.style.zIndex = 100;
-		th.btn.startBtn.style.background = th.bgColor;
-		th.btn.startBtn.style.color = th.textColor;
-		th.btn.startBtn.style.border = th.textColor + " thin solid";
-		th.btn.startBtn.style.borderRadius = "8px";
-		th.btn.startBtn.style.padding = ".25rem";
-		th.holder.appendChild(th.btn.startBtn);
-		var t = document.createTextNode(th.btnText);
-		th.btn.startBtn.appendChild(t);
+		if (th.btn.startBtn === "") {
+			th.btn.startBtn = document.createElement("h3");
+			th.btn.startBtn.id = "click-to-play";
+			th.btn.startBtn.alt = "Click to Play";
+			th.btn.startBtn.style.margin = "-60% auto 0";
+			th.btn.startBtn.style.maxWidth = "50%";
+			th.btn.startBtn.style.position = "relative";
+			th.btn.startBtn.style.textAlign = "center";
+			th.btn.startBtn.style.cursor = "pointer";
+			th.btn.startBtn.style.zIndex = 100;
+			th.btn.startBtn.style.background = th.bgColor;
+			th.btn.startBtn.style.color = th.textColor;
+			th.btn.startBtn.style.border = th.textColor + " thin solid";
+			th.btn.startBtn.style.borderRadius = "8px";
+			th.btn.startBtn.style.padding = ".25rem";
+			th.holder.appendChild(th.btn.startBtn);
+			var t = document.createTextNode(th.btnText);
+			th.btn.startBtn.appendChild(t);
+		} else {
+			th.btn.startBtn.style.visibility = "visible";
+		}
 	}
 
 	function goPoster() {
+		console.log("poster");
 		th.video.removeAttribute("autostart");
 		th.video.load();
 		th.btn.playBtn.src = th.paths.button() + "playBtn.png";
-		if (th.btn.startBtn) {
+		if (!th.btn.startBtn) {
+			startBtnCreate();
+		} else {
 			th.btn.startBtn.style.visibility = "visible";
 			console.log('elementExists');
-		} else {
-			startBtnCreate();
 		}
 	}
 
@@ -532,13 +558,23 @@ function createPlayer() {
 		if (th.exitoncomplete === "yes") {
 			th.video.getElementById('talkinghead').addEventListener("ended", closePlayer, false);
 		}
-		if (th.goStop > 0) {
-			var frameRate = 30;
-			th.player.ontimeupdate = function () {
-				if (myPause === false) {
-					timeUpdate();
-				}
+		console.log("goStop=" + th.player.goStop());
+		if (th.player.goStop()) {
+			th.video.ontimeupdate = function () {
+				timeUpdate();
 			};
+		}
+	}
+
+	function timeUpdate() {
+		console.log("time update");
+		var theCurrentFrame = Math.floor(th.video.currentTime * th.player.frameRate);
+		if (theCurrentFrame >= th.goStop && theCurrentFrame <= th.goStop + 10) {
+			th.btn.playBtn.src = th.paths.button() + "playBtn.png";
+			th.video.pause();
+			th.video.ontimeupdate = null;
+			th.autostart = "yes";
+			startBtnCreate();
 		}
 	}
 
@@ -597,6 +633,15 @@ function createPlayer() {
 				case "talkinghead":
 				case "click-to-play":
 				case "playBtn":
+					if (th.player.goStop()) {
+						th.autostart = "yes";
+						playToggle();
+					}
+					if (th.player.mute) {
+						th.player.mute = false;
+						th.video.muted = false;
+						th.video.load();
+					}
 					playToggle();
 					break;
 			}
@@ -607,7 +652,8 @@ function createPlayer() {
 	function videoEnded() {
 		if (th.exitoncomplete === "yes") {
 			closePlayer();
-		} else {
+		} else if (th.player.loop() !== true) {
+			startBtnCreate();
 			goPoster();
 		}
 	}
@@ -639,11 +685,10 @@ function createPlayer() {
 
 	function playToggle() {
 		if (th.video.paused) {
-			if (th.btn.startBtn) {
+			try {
 				th.btn.startBtn.style.visibility = "hidden";
-				console.log('elementExists');
-			} else {
-				startBtnCreate();
+			} catch (err) {
+				console.log("error on startBtn");
 			}
 			th.video.play();
 			th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
@@ -655,150 +700,4 @@ function createPlayer() {
 	}
 }
 
-
-/*
-
-	function HTML5Autostart() {
-		if (autostart === "yes" || toLoop === true) {
-			var promise = th.video.play();
-			if (promise !== undefined) {
-				promise.then(_ => {
-					th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
-				}).catch(error => {
-					console.log('Play Error');
-					goPoster();
-				});
-			}
-		}
-		if (autostart === "yes" || toLoop === true) {
-			th.video.autoplay = true;
-			th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
-			th.controls.playerBar.style.opacity = "1";
-			startPlaying();
-		} else {
-			goPoster();
-		}
-		if (exitoncomplete === "yes") {
-			th.video.addEventListener("ended", closePlayer, false);
-		}
-	}
-
-
-
-		function timeUpdate() {
-			curTime = th.video.currentTime;
-			var theCurrentFrame = Math.floor(curTime * frameRate);
-			if (theCurrentFrame >= goStop && theCurrentFrame <= goStop + 10) {
-				th.btn.playBtn.src = th.paths.button() + "playBtn.png";
-				myPause = true;
-				th.video.pause();
-				startBtnCreate();
-			}
-		}
-
-
-		try {
-			th.video.addEventListener("ended", videoEnded, false);
-		} catch (err) {}
-	}
-
-
-	function videoEnded() {
-		th.btn.playBtn.src = th.paths.button() + "playBtn.png";
-		if (exitoncomplete === "yes") {
-			closePlayer();
-		} else {
-			th.video.autoplay = false;
-			goPoster();
-		}
-	}
-
-	function playClick() {
-		document.getElementById("click-to-play").style.visibility = "visible";
-		if (!canvasSupported) {
-			th.video.play();
-			th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
-		} else {
-			startPlaying();
-		}
-	}
-
-	function playToggle() {
-		if (th.video.paused) {
-			try {
-				document.getElementById("click-to-play").parentNode.removeChild(document.getElementById("click-to-play"));
-			} catch (err) {}
-			th.video.play();
-			th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
-			th.controls.playerBar.style.opacity = "1";
-		} else {
-			th.btn.playBtn.src = th.paths.button() + "playBtn.png";
-			th.video.pause();
-		}
-	}
-
-	function muteToggle() {
-		if (th.video.muted) {
-			th.video.muted = false;
-			th.btn.muteBtn.src = th.paths.button() + "VolumeBtn.png";
-		} else {
-			th.btn.muteBtn.src = th.paths.button() + "VolumeBtnMute.png";
-			th.video.muted = true;
-		}
-	}
-
-	function restartClick() {
-		th.video.currentTime = 0;
-		th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
-		playClick();
-		th.video.play();
-	}
-
-
-
-	function goPoster() {
-		console.log('goPoster');
-		th.video.load();
-		var elementExists = document.getElementById('click-to-play');
-		if (elementExists) {
-			startBtn.style.visibility = "visible";
-			console.log('elementExists');
-		} else {
-			startBtnCreate();
-		}
-	}
-
-	function startBtnCreate() {
-		console.log('create element');
-		startBtn = document.createElement("h3");
-		startBtn.id = "click-to-play";
-		startBtn.alt = "Click to Play";
-		startBtn.style.margin = "60% auto 0";
-		startBtn.style.maxWidth = "50%";
-		startBtn.style.position = "relative";
-		startBtn.style.textAlign = "center";
-		startBtn.style.cursor = "pointer";
-		startBtn.style.zIndex = 100;
-		startBtn.style.background = bgColor;
-		startBtn.style.color = textColor;
-		startBtn.style.border = textColor + " thin solid";
-		startBtn.style.borderRadius = "8px";
-		startBtn.style.padding = ".25rem";
-		document.getElementById("controls").appendChild(startBtn);
-		var t = document.createTextNode(btnText);
-		startBtn.appendChild(t);
-	}
-
-
-	function removeMuted() {
-		th.btn.muteBtn.src = th.paths.button() + "VolumeBtn.png";
-		toMute = false;
-		toLoop = false;
-		th.video.muted = false;
-		th.video.loop = false;
-		setTimeout(function () {
-			restartClick();
-		}, 150);
-	}
-}*/
 // Copyright 2018 Website Talking Heads
