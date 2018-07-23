@@ -12,7 +12,6 @@ if (window.addEventListener) {
 
 function report() {
 	"use strict";
-	/*	console.log(th.controls.playerBar.playBtn);*/
 	if (th.device && !th.showDevice) {
 		return;
 	}
@@ -47,7 +46,7 @@ function report() {
 		}
 	}
 	document.getElementById('reporter').value = str;
-	console.log(th.player.loop());
+	console.log(th.player.autostart());
 }
 var th = {
 	responsive: false, //You must place <div id:"wthvideo"></div> inside the div you want the video to be in.
@@ -69,7 +68,7 @@ var th = {
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	btnText: "PLAY", //you can customs playbuton text
 	exitbtn: "yes", //show or not show exitbtn
-	autostart: "goStop", //yes, no, mute,loop, slide, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop
+	autostart: "yes", //yes, no, mute,loop, slide, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop
 	exitoncomplete: "no", //option for player to close after video completes. "yes" or "no"
 	path: "talkingheads", //path to where the files are located
 	actorpic: "slider", //transparent gif
@@ -260,8 +259,7 @@ var th = {
 		},
 		autostart: function () {
 			'use strict';
-			console.log("mute=" + this.mute());
-			if (this.loop() || this.mute || this.goStop) {
+			if (this.loop() || this.mute() || this.goStop() ) {
 				return true;
 			} else {
 				return false;
@@ -342,12 +340,6 @@ function createPlayer() {
 		}
 		th.video.volume = th.volume;
 		th.video.style.width = th.width + "px";
-		if (th.player.mute()) {
-			th.video.muted = true;
-			if (th.video.loop()) {
-				startBtnCreate();
-			}
-		}
 		if (th.canvasSupported) {
 			th.video.style.height = th.height * 2 + "px";
 		} else {
@@ -409,6 +401,8 @@ function createPlayer() {
 				break;
 			default:
 				console.log("controlbar not set properly");
+				th.controls.playerBar.style.marginTop = th.playerBar.height();
+				break;
 		}
 		th.controls.appendChild(th.controls.playerBar);
 		var i = 0;
@@ -465,7 +459,7 @@ function createPlayer() {
 	}
 	//-----------------------------------------------Start Playing--------------	
 	function playSpokesperson() {
-		if (th.player.autostart) {
+		if (th.player.autostart()) {
 			var promise = th.video.play();
 			if (promise !== undefined) {
 				promise.then(_ => {
@@ -479,10 +473,11 @@ function createPlayer() {
 			if (th.player.mute()) {
 				th.video.muted = true;
 				startBtnCreate();
+			} else if (!th.player.autostart) {
+				goPoster();
+			} else {
+				startPlaying();
 			}
-			startPlaying();
-		} else {
-			goPoster();
 		}
 	}
 
@@ -538,15 +533,25 @@ function createPlayer() {
 	}
 
 	function goPoster() {
-		console.log("poster");
 		th.video.removeAttribute("autostart");
-		th.video.load();
+		th.video.pause();
+		if (!th.player.poster) {
+			th.player.poster = document.createElement("IMG");
+			th.player.poster.src = th.paths.poster();
+			th.player.poster.id = "poster";
+			th.player.poster.style.visibility = "visible";
+			th.player.poster.style.position = "relative";
+			th.player.poster.style.top = 0;
+			th.controls.appendChild(th.player.poster);
+		} else {
+			th.player.poster.style.visibility = "visible";
+		}
+		startPlaying();
 		th.btn.playBtn.src = th.paths.button() + "playBtn.png";
 		if (!th.btn.startBtn) {
 			startBtnCreate();
 		} else {
 			th.btn.startBtn.style.visibility = "visible";
-			console.log('elementExists');
 		}
 	}
 
@@ -558,7 +563,6 @@ function createPlayer() {
 		if (th.exitoncomplete === "yes") {
 			th.video.getElementById('talkinghead').addEventListener("ended", closePlayer, false);
 		}
-		console.log("goStop=" + th.player.goStop());
 		if (th.player.goStop()) {
 			th.video.ontimeupdate = function () {
 				timeUpdate();
@@ -567,7 +571,6 @@ function createPlayer() {
 	}
 
 	function timeUpdate() {
-		console.log("time update");
 		var theCurrentFrame = Math.floor(th.video.currentTime * th.player.frameRate);
 		if (theCurrentFrame >= th.goStop && theCurrentFrame <= th.goStop + 10) {
 			th.btn.playBtn.src = th.paths.button() + "playBtn.png";
@@ -617,7 +620,6 @@ function createPlayer() {
 
 	function doSomething(e) {
 		if (e.target !== e.currentTarget) {
-			console.log('click=' + e.target.id);
 			switch (e.target.id) {
 				case "muteBtn":
 					muteToggle();
@@ -687,6 +689,7 @@ function createPlayer() {
 		if (th.video.paused) {
 			try {
 				th.btn.startBtn.style.visibility = "hidden";
+				th.player.poster.style.visibility = "hidden";
 			} catch (err) {
 				console.log("error on startBtn");
 			}
@@ -701,3 +704,4 @@ function createPlayer() {
 }
 
 // Copyright 2018 Website Talking Heads
+//am I still working?
