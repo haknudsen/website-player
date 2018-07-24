@@ -46,7 +46,7 @@ function report() {
 		}
 	}
 	document.getElementById('reporter').value = str;
-	console.log(th.player.slide());
+	console.log(th.controlbar);
 }
 var th = {
 	responsive: false, //You must place <div id:"wthvideo"></div> inside the div you want the video to be in.
@@ -68,7 +68,7 @@ var th = {
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	btnText: "PLAY", //you can customs playbuton text
 	exitbtn: "yes", //show or not show exitbtn
-	autostart: "slide", //yes, no, mute,loop, slide, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop
+	autostart: "no", //yes, no, mute,loop, slide, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop
 	exitoncomplete: "no", //option for player to close after video completes. "yes" or "no"
 	path: "talkingheads", //path to where the files are located
 	actorpic: "slider", //transparent gif
@@ -425,6 +425,7 @@ function createPlayer() {
 		th.btn.closeBtn = document.getElementById('closeBtn');
 
 		function setCss3Style(el, prop, val) {
+			console.log( "controlbasr" );
 			for (var i = 0, l = th.vendors.length; i < l; i++) {
 				el.style[toCamelCase(th.vendors[i] + prop)] = val;
 			}
@@ -597,6 +598,7 @@ function createPlayer() {
 
 	function outVideo(e) {
 		if (e.target !== e.currentTarget) {
+			console.log( e.target.id );
 			switch (e.target.id) {
 				case "talkingCanvas":
 					th.controls.playerBar.style.marginTop = "0px";
@@ -615,8 +617,10 @@ function createPlayer() {
 
 	function overVideo(e) {
 		if (e.target !== e.currentTarget) {
+			console.log( e.target.id );
 			switch (e.target.id) {
 				case "talkingCanvas":
+					console.log( th.playerBar.margin() );
 					th.controls.playerBar.style.marginTop = th.playerBar.margin;
 					break;
 				case "playBtn":
@@ -645,10 +649,11 @@ function createPlayer() {
 				case "htmlClose":
 					closePlayer();
 					break;
-				case "talkingCanvas":
+				case "wthvideo":
 				case "talkinghead":
 				case "click-to-play":
 				case "playBtn":
+				case "talkingCanvas":
 					if (th.player.goStop()) {
 						th.autostart = "yes";
 						playToggle();
@@ -725,7 +730,6 @@ function createPlayer() {
 			if (position > 0) {
 				position -= speed;
 				th.controls.style.top = position + "px";
-				console.log("top=" + th.controls.style.top);
 			} else {
 				th.btn.startBtn.style.visibility = "visible";
 				clearInterval(timer);
