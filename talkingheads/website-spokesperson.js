@@ -321,6 +321,7 @@ function createPlayer() {
 	th.holder.style.width = th.width + "px";
 	th.holder.style.zIndex = 9999;
 	th.holder.style.cursor = "pointer";
+	th.holder.style.overflow = "hidden";
 	th.holder.style.overflow = th.overflow;
 	createVideo();
 	createControls();
@@ -564,19 +565,7 @@ function createPlayer() {
 			th.btn.startBtn.style.visibility = "visible";
 		}
 		if (th.player.slide()) {
-			var speed = 10;
-			var position = th.height;
-			th.player.poster.style.top = th.height + "px";
-			var timer = setInterval(function () {
-					console.log("top=" + th.player.poster.style.top);
-				if (position > 0) {
-					position -= speed;
-					th.player.poster.style.top = position + "px";
-					console.log("top=" + th.player.poster.style.top);
-				}else{
-					clearInterval(timer);
-				}
-			}, 10);
+			slide();
 		}
 	}
 
@@ -725,6 +714,23 @@ function createPlayer() {
 			th.btn.playBtn.src = th.paths.button() + "playBtn.png";
 			th.video.pause();
 		}
+	}
+
+	function slide() {
+		th.btn.startBtn.style.visibility = "hidden";
+		var speed = 2;
+		var position = th.height;
+		th.controls.style.top = th.height + "px";
+		var timer = setInterval(function () {
+			if (position > 0) {
+				position -= speed;
+				th.controls.style.top = position + "px";
+				console.log("top=" + th.controls.style.top);
+			} else {
+				th.btn.startBtn.style.visibility = "visible";
+				clearInterval(timer);
+			}
+		}, 10);
 	}
 }
 
