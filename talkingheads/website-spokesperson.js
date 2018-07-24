@@ -46,7 +46,7 @@ function report() {
 		}
 	}
 	document.getElementById('reporter').value = str;
-	console.log("main reporter");
+	console.log(th.player.slide());
 }
 var th = {
 	responsive: false, //You must place <div id:"wthvideo"></div> inside the div you want the video to be in.
@@ -68,7 +68,7 @@ var th = {
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	btnText: "PLAY", //you can customs playbuton text
 	exitbtn: "yes", //show or not show exitbtn
-	autostart: "no", //yes, no, mute,loop, slide, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop
+	autostart: "slide", //yes, no, mute,loop, slide, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop
 	exitoncomplete: "no", //option for player to close after video completes. "yes" or "no"
 	path: "talkingheads", //path to where the files are located
 	actorpic: "slider", //transparent gif
@@ -225,7 +225,7 @@ var th = {
 	player: {
 		loop: function () {
 			'use strict';
-			if (th.player.mute === "mute" || th.autostart === "loop") {
+			if (th.autostart === "mute" || th.autostart === "loop") {
 				return true;
 			} else {
 				return false;
@@ -259,13 +259,21 @@ var th = {
 		},
 		autostart: function () {
 			'use strict';
-			if (this.loop() || this.mute || this.goStop) {
+			if (this.loop() || this.mute() || this.goStop()) {
 				return true;
 			} else {
 				return false;
 			}
 		},
 		frameRate: 30,
+		slide: function () {
+			'use strict';
+			if (th.autostart === "slide") {
+				return true;
+			} else {
+				return false;
+			}
+		},
 		goStop: function () {
 			'use strict';
 			if (th.autostart === "goStop") {
@@ -478,6 +486,8 @@ function createPlayer() {
 			} else {
 				startPlaying();
 			}
+		} else {
+			goPoster();
 		}
 	}
 
@@ -552,6 +562,21 @@ function createPlayer() {
 			startBtnCreate();
 		} else {
 			th.btn.startBtn.style.visibility = "visible";
+		}
+		if (th.player.slide()) {
+			var speed = 10;
+			var position = th.height;
+			th.player.poster.style.top = th.height + "px";
+			var timer = setInterval(function () {
+					console.log("top=" + th.player.poster.style.top);
+				if (position > 0) {
+					position -= speed;
+					th.player.poster.style.top = position + "px";
+					console.log("top=" + th.player.poster.style.top);
+				}else{
+					clearInterval(timer);
+				}
+			}, 10);
 		}
 	}
 
