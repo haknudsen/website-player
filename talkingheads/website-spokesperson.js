@@ -46,7 +46,7 @@ function report() {
 		}
 	}
 	document.getElementById('reporter').value = str;
-	console.log(th.controlbar);
+	console.log(th.playerBar.height());
 }
 var th = {
 	responsive: false, //You must place <div id:"wthvideo"></div> inside the div you want the video to be in.
@@ -403,14 +403,15 @@ function createPlayer() {
 				th.controls.playerBar.style.visibility = "hidden";
 				break;
 			case "yes":
-				th.controls.playerBar.style.marginTop = th.playerBar.height();
+				th.controls.playerBar.style.bottom = th.playerBar.height();
 				break;
 			case "mouse":
+				th.controls.playerBar.style.bottom = th.playerBar.height()*(-1);
 				setCss3Style(th.controls.playerBar, "transition", "all 1s");
 				break;
 			default:
 				console.log("controlbar not set properly");
-				th.controls.playerBar.style.marginTop = th.playerBar.height();
+				th.controls.playerBar.style.bottom = th.playerBar.height();
 				break;
 		}
 		th.controls.appendChild(th.controls.playerBar);
@@ -425,7 +426,6 @@ function createPlayer() {
 		th.btn.closeBtn = document.getElementById('closeBtn');
 
 		function setCss3Style(el, prop, val) {
-			console.log( "controlbasr" );
 			for (var i = 0, l = th.vendors.length; i < l; i++) {
 				el.style[toCamelCase(th.vendors[i] + prop)] = val;
 			}
@@ -598,16 +598,16 @@ function createPlayer() {
 
 	function outVideo(e) {
 		if (e.target !== e.currentTarget) {
-			console.log( e.target.id );
 			switch (e.target.id) {
 				case "talkingCanvas":
-					th.controls.playerBar.style.marginTop = "0px";
+					th.controls.playerBar.style.bottom = (th.playerBar.height()*-1) + "px";
 					break;
 				case "playBtn":
 				case "muteBtn":
 				case "restartBtn":
 				case "closeBtn":
 				case "htmlClose":
+					th.controls.playerBar.style.bottom = (th.playerBar.height()*-1) + "px";
 					e.target.style.opacity = 1;
 					break;
 			}
@@ -617,11 +617,9 @@ function createPlayer() {
 
 	function overVideo(e) {
 		if (e.target !== e.currentTarget) {
-			console.log( e.target.id );
 			switch (e.target.id) {
 				case "talkingCanvas":
-					console.log( th.playerBar.margin() );
-					th.controls.playerBar.style.marginTop = th.playerBar.margin;
+					th.controls.playerBar.style.bottom = "0px";
 					break;
 				case "playBtn":
 				case "muteBtn":
@@ -629,7 +627,8 @@ function createPlayer() {
 				case "closeBtn":
 				case "htmlClose":
 					e.target.style.opacity = 0.5;
-					th.controls.playerBar.style.marginTop = th.playerBar.margin;
+					th.controls.playerBar.style.bottom = th.playerBar.height;
+					th.controls.playerBar.style.bottom = "0px";
 					break;
 			}
 		}
