@@ -17,16 +17,16 @@ var th = {
 	bgColor: "rgba(200, 200, 255,0.5)", //the color of the player bar.
 	textColor: "#0474ff", //set color of text
 	volume: "0.8",
-	delay: 500, //delay start of video 1000= 1 second
+	delay: 50, //delay start of video 1000= 1 second
 	goStop: "1",
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	btnText: "PLAY", //you can customs playbuton text
 	exitbtn: "yes", //show or not show exitbtn
-	autostart: "slide", //yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop,loop, slide
+	autostart: "oncethenmute", //yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop,loop, slide
 	exitoncomplete: "no", //option for player to close after video completes. "yes" or "no"
 	path: "talkingheads", //path to where the files are located
 	actorpic: "juliapricing", //transparent gif
-	canvasVideo: "juliapricing-canvas", //Just name,not extension
+	canvasVideo: "juliapricing-matte_v2", //Just name,not extension
 	h264: "juliapricing", //Just name,not extension h264
 	// end Main Player Vars--------------------------------------------------------------------------------------
 	overflow: "hidden",
@@ -187,6 +187,10 @@ var th = {
 		},
 		mute: function () {
 			'use strict';
+			if (!th.storage.use()) {
+				th.autostart = "yes";
+				return false;
+			}
 			switch (th.autostart) {
 				case "mute":
 					th.autostart = "yes";
@@ -213,7 +217,7 @@ var th = {
 		},
 		autostart: function () {
 			'use strict';
-			if (this.loop() || this.mute() || this.goStop()) {
+			if (this.loop() || this.mute() || this.goStop() || !th.storage.use() || th.autostart === "yes") {
 				return true;
 			} else {
 				return false;
@@ -482,7 +486,7 @@ function createPlayer() {
 			th.btn.startBtn.style.position = "relative";
 			th.btn.startBtn.style.margin = "-50% auto 0";
 			th.btn.startBtn.style.fontSize = "32px";
-			th.btn.startBtn.style.fontWeight= "900";
+			th.btn.startBtn.style.fontWeight = "900";
 			th.btn.startBtn.style.width = "50%";
 			th.btn.startBtn.style.textAlign = "center";
 			th.btn.startBtn.style.cursor = "pointer";
@@ -609,16 +613,17 @@ function createPlayer() {
 				case "click-to-play":
 				case "playBtn":
 				case "talkingCanvas":
+					console.log(th.player.mute());
 					if (th.player.goStop()) {
 						th.autostart = "yes";
 						playToggle();
-					}
-					if (th.player.mute) {
+					} else if (th.player.mute()) {
 						th.player.mute = false;
 						th.video.muted = false;
 						th.video.load();
+					} else {
+						playToggle();
 					}
-					playToggle();
 					break;
 			}
 		}
@@ -735,7 +740,7 @@ function report() {
 				return obj.toString();
 		}
 	}
-//	console.log(th.playerBar.height());
+	console.log("!th.storage.use()= " + th.player.autostart());
 }
 // Copyright 2018 Website Talking Heads
 //am I still working?
