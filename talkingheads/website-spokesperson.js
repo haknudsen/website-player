@@ -1,58 +1,12 @@
 // Copyright 2018 Website Talking Heads
 //Version 1.4.1
 // JavaScript Document
-//Delay creation until page is loaded
-if (window.addEventListener) {
-	window.addEventListener("load", report, false);
-} else if (window.attachEvent) {
-	window.attachEvent("onload", report);
-} else {
-	window.onload = report;
-}
 
-function report() {
-	"use strict";
-	if (th.device && !th.showDevice) {
-		return;
-	}
-	if (th.player.toPlay() === true) {
-		setTimeout(function () {
-			createPlayer();
-		}, th.delay);
-	} else {
-		console.log('Not going to play');
-		return;
-	}
-	var str = objToString(th.player, 3);
-	str.replace(/,/g, "\n");
-
-	function objToString(obj, ndeep) {
-		if (obj === null) {
-			return String(obj);
-		}
-		switch (typeof obj) {
-			case "string":
-				return '"' + obj + '"';
-			case "function":
-				return obj.name || obj.toString();
-			case "object":
-				var indent = Array(ndeep || 1).join('\t'),
-					isArray = Array.isArray(obj);
-				return [+isArray] + Object.keys(obj).map(function (key) {
-					return '\t' + indent + key + ': ' + objToString(obj[key], (ndeep || 1) + 1);
-				}).join('\n') + '\n' + indent + [+isArray];
-			default:
-				return obj.toString();
-		}
-	}
-	document.getElementById('reporter').value = str;
-	console.log(th.playerBar.height());
-}
 var th = {
-	responsive: false, //You must place <div id:"wthvideo"></div> inside the div you want the video to be in.
+	responsive: true, //You must place <div id:"wthvideo"></div> inside the div you want the video to be in.
 	showDevice: true, //Display Talking Head On Devices true or false
 	cookies: true, //Use cookies to effect autostart and once per session options -true or false
-	width: 320, //video width
+	width: 352, //video width
 	height: 320, //video height
 	position: "fixed", //fixed or absolute positioning
 	left: "50%", //if centering on page change this to 50%
@@ -68,12 +22,12 @@ var th = {
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	btnText: "PLAY", //you can customs playbuton text
 	exitbtn: "yes", //show or not show exitbtn
-	autostart: "no", //yes, no, mute,loop, slide, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop
+	autostart: "slide", //yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop,loop, slide
 	exitoncomplete: "no", //option for player to close after video completes. "yes" or "no"
 	path: "talkingheads", //path to where the files are located
-	actorpic: "slider", //transparent gif
-	canvasVideo: "Slider-Matte-hb", //Just name,not extension
-	h264: "slider", //Just name,not extension h264
+	actorpic: "juliapricing", //transparent gif
+	canvasVideo: "juliapricing-canvas", //Just name,not extension
+	h264: "juliapricing", //Just name,not extension h264
 	// end Main Player Vars--------------------------------------------------------------------------------------
 	overflow: "hidden",
 	vendors: ["-moz-", "-webkit-", "-o-", "-ms-", "-khtml-", ""],
@@ -343,7 +297,7 @@ function createPlayer() {
 		}
 		th.video.src = th.paths.video();
 		th.video.zIndex = 1;
-		th.video.poster = th.paths.poster();
+		/*		th.video.poster = th.paths.poster();*/
 		if (th.canvasSupported) {
 			th.video.style.display = "none";
 		}
@@ -406,7 +360,7 @@ function createPlayer() {
 				th.controls.playerBar.style.bottom = th.playerBar.height();
 				break;
 			case "mouse":
-				th.controls.playerBar.style.bottom = th.playerBar.height()*(-1);
+				th.controls.playerBar.style.bottom = th.playerBar.height() * (-1);
 				setCss3Style(th.controls.playerBar, "transition", "all 1s");
 				break;
 			default:
@@ -522,12 +476,14 @@ function createPlayer() {
 
 	function startBtnCreate() {
 		if (th.btn.startBtn === "") {
-			th.btn.startBtn = document.createElement("h3");
+			th.btn.startBtn = document.createElement("DIV");
 			th.btn.startBtn.id = "click-to-play";
 			th.btn.startBtn.alt = "Click to Play";
-			th.btn.startBtn.style.margin = "-60% auto 0";
-			th.btn.startBtn.style.maxWidth = "50%";
 			th.btn.startBtn.style.position = "relative";
+			th.btn.startBtn.style.margin = "-50% auto 0";
+			th.btn.startBtn.style.fontSize = "32px";
+			th.btn.startBtn.style.fontWeight= "900";
+			th.btn.startBtn.style.width = "50%";
 			th.btn.startBtn.style.textAlign = "center";
 			th.btn.startBtn.style.cursor = "pointer";
 			th.btn.startBtn.style.zIndex = 100;
@@ -600,14 +556,14 @@ function createPlayer() {
 		if (e.target !== e.currentTarget) {
 			switch (e.target.id) {
 				case "talkingCanvas":
-					th.controls.playerBar.style.bottom = (th.playerBar.height()*-1) + "px";
+					th.controls.playerBar.style.bottom = (th.playerBar.height() * -1) + "px";
 					break;
 				case "playBtn":
 				case "muteBtn":
 				case "restartBtn":
 				case "closeBtn":
 				case "htmlClose":
-					th.controls.playerBar.style.bottom = (th.playerBar.height()*-1) + "px";
+					th.controls.playerBar.style.bottom = (th.playerBar.height() * -1) + "px";
 					e.target.style.opacity = 1;
 					break;
 			}
@@ -736,6 +692,50 @@ function createPlayer() {
 		}, 10);
 	}
 }
+if (window.addEventListener) {
+	window.addEventListener("load", report, false);
+} else if (window.attachEvent) {
+	window.attachEvent("onload", report);
+} else {
+	window.onload = report;
+}
 
+function report() {
+	"use strict";
+	if (th.device() && !th.showDevice) {
+		return;
+	}
+	if (th.player.toPlay() === true) {
+		setTimeout(function () {
+			createPlayer();
+		}, th.delay);
+	} else {
+		console.log('Not going to play');
+		return;
+	}
+	var str = objToString(th.player, 3);
+	str.replace(/,/g, "\n");
+
+	function objToString(obj, ndeep) {
+		if (obj === null) {
+			return String(obj);
+		}
+		switch (typeof obj) {
+			case "string":
+				return '"' + obj + '"';
+			case "function":
+				return obj.name || obj.toString();
+			case "object":
+				var indent = Array(ndeep || 1).join('\t'),
+					isArray = Array.isArray(obj);
+				return [+isArray] + Object.keys(obj).map(function (key) {
+					return '\t' + indent + key + ': ' + objToString(obj[key], (ndeep || 1) + 1);
+				}).join('\n') + '\n' + indent + [+isArray];
+			default:
+				return obj.toString();
+		}
+	}
+//	console.log(th.playerBar.height());
+}
 // Copyright 2018 Website Talking Heads
 //am I still working?
