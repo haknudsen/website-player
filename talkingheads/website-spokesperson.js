@@ -21,7 +21,7 @@ var th = {
 	delay: 50, //delay start of video 1000= 1 second
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	exitbtn: "yes", //show or not show exitbtn
-	autostart: "oncethenmute", //yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop,loop, slide
+	autostart: "yes", //yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop,loop, slide
 	goStop: "1",
 	exitoncomplete: false, //option for player to close after video completes. true or false
 	path: "talkingheads", //path to where the files are located
@@ -215,8 +215,8 @@ var th = {
 		},
 		autostart: function () {
 			'use strict';
-				console.log("mute-" + this.mute() );
-			if (this.loop() || this.mute() || this.goStop() ||  th.autostart === "yes") {
+			console.log("mute-" + this.mute());
+			if (this.loop() || this.mute() || this.goStop() || th.autostart === "yes") {
 				return true;
 			} else {
 				return false;
@@ -437,13 +437,14 @@ function createPlayer() {
 				});
 			}
 			if (th.player.mute()) {
-				console.log( "mute=" + th.player.mute() );
+				console.log("mute=" + th.player.mute());
 				th.video.muted = true;
 				startBtnCreate();
 				startPlaying();
 			} else if (th.autostart === "no") {
 				goPoster();
 			} else {
+				th.btn.playBtn.src = th.paths.button() + "pauseBtn.png";
 				startPlaying();
 			}
 		} else {
@@ -561,7 +562,7 @@ function createPlayer() {
 			switch (e.target.id) {
 				case "talkingCanvas":
 					if (th.controlbar === "mouse") {
-					th.controls.playerBar.style.bottom = (th.playerBar.height() * -1) + "px";
+						th.controls.playerBar.style.bottom = (th.playerBar.height() * -1) + "px";
 					}
 					break;
 				case "playBtn":
@@ -584,7 +585,7 @@ function createPlayer() {
 			switch (e.target.id) {
 				case "talkingCanvas":
 					if (th.controlbar === "mouse") {
-					th.controls.playerBar.style.bottom = "0px";
+						th.controls.playerBar.style.bottom = "0px";
 					}
 					break;
 				case "playBtn":
@@ -594,7 +595,7 @@ function createPlayer() {
 				case "htmlClose":
 					e.target.style.opacity = 0.5;
 					if (th.controlbar === "mouse") {
-					th.controls.playerBar.style.bottom = "0px";
+						th.controls.playerBar.style.bottom = "0px";
 					}
 					break;
 			}
@@ -745,7 +746,7 @@ function report() {
 				return obj.toString();
 		}
 	}
-	console.log("storage= " + th.storage.session() + " local-" + th.storage.local());
+	console.log("session= " + th.storage.session() + " local-" + th.storage.local());
 }
 // Copyright 2018 Website Talking Heads
 //am I still working?
