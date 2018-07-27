@@ -21,7 +21,7 @@ var th = {
 	delay: 50, //delay start of video 1000= 1 second
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	exitbtn: "yes", //show or not show exitbtn
-	autostart: "oncethenpic", //yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop,loop, slide
+	autostart: "oncethenmute", //yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop,loop, slide
 	goStop: "1",
 	exitoncomplete: false, //option for player to close after video completes. true or false
 	path: "talkingheads", //path to where the files are located
@@ -187,17 +187,14 @@ var th = {
 		},
 		mute: function () {
 			'use strict';
-			if (!th.storage.use()) {
-				return false;
-			}
 			switch (th.autostart) {
 				case "mute":
 					return true;
 				case "oncethenmute":
-					if (th.storage.local()) {
-						return true;
-					} else {
+					if (th.player.once()) {
 						return false;
+					} else {
+						return true;
 					}
 					break;
 				case "onceonlythenmute":
@@ -223,7 +220,7 @@ var th = {
 		autostart: function () {
 			'use strict';
 			console.log("once-" + th.player.once());
-			if (this.loop() || this.mute() || this.goStop() || th.autostart === "yes" || th.player.once()) {
+			if (this.loop() || this.mute() || this.goStop() || th.autostart === "yes" || th.player.once() || !th.storage.use()) {
 				return true;
 			} else {
 				return false;
@@ -733,35 +730,7 @@ function report() {
 		console.log('Not going to play');
 		return;
 	}
-	var str = objToString(th.storage, 3);
-	str.replace(/,/g, "\n");
-
-	function objToString(obj, ndeep) {
-		if (obj === null) {
-			return String(obj);
-		}
-		switch (typeof obj) {
-			case "string":
-				return '"' + obj + '"';
-			case "function":
-				return obj.name || obj.toString();
-			case "object":
-				var indent = Array(ndeep || 1).join('\t'),
-					isArray = Array.isArray(obj);
-				return [+isArray] + Object.keys(obj).map(function (key) {
-					return '\t' + indent + key + ': ' + objToString(obj[key], (ndeep || 1) + 1);
-				}).join('\n') + '\n' + indent + [+isArray];
-			default:
-				return obj.toString();
-		}
-	}
-	console.log("storage= " + str);
-	console.log("local=" + th.storage.local());
-	console.log("session=" + th.storage.session());
-	console.log("use=" + th.storage.use());
-	console.log("name=" + th.storage.name());
-	console.log("autostart=" + th.player.autostart());
-	console.log("once=" + th.player.once());
+	console.log("local=" + th.storage.local()+ " session=" + th.storage.session()+" use=" + th.storage.use() + " name=" + th.storage.name() + " autostart=" + th.player.autostart() + " once=" + th.player.once());
 }
 // Copyright 2018 Website Talking Heads
 //am I still working?
