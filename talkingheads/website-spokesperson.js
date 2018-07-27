@@ -21,8 +21,8 @@ var th = {
 	delay: 50, //delay start of video 1000= 1 second
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	exitbtn: true, //show or not show exitbtn
-	autostart: "loop", //yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop,loop, slide
-	goStop: "1",
+	autostart: "no", //yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop,loop, slide
+	goStop: 30,//frame to stop on.  30 frames is one second.
 	exitoncomplete: false, //option for player to close after video completes. true or false
 	path: "talkingheads", //path to where the files are located
 	actorpic: "juliapricing", //transparent gif
