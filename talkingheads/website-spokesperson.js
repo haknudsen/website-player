@@ -3,32 +3,35 @@
 // JavaScript Document
 
 var th = {
-	responsive: true, //You must place <div id:"wthvideo"></div> inside the div you want the video to be in.
+	responsive: false, //You must place <div id:"wthvideo"></div> inside the div you want the video to be in.
 	showDevice: true, //Display Talking Head On Devices true or false
 	cookies: true, //Use cookies to effect autostart and once per session options -true or false
 	width: 352, //video width
 	height: 320, //video height
 	position: "fixed", //fixed or absolute positioning
-	left: "50%", //if centering on page change this to 50%
-	right: "auto",
-	divTop: "0",
-	bottom: "auto",
-	centeroffset: "-160", //if centering on page negative numbers are left and positive numbers are right
-	bgColor: "rgba(200, 200, 255,0.5)", //the color of the player bar.
+	left: "auto", //if centering on page change this to 50%
+	right: "0",
+	divTop: "auto",
+	bottom: "0",
+	centeroffset: "auto", //if centering on page negative numbers are left and positive numbers are right
+	bgColor: "rgba(255, 255, 255,0.5)", //the color of the player bar.
 	textColor: "#0474ff", //set color of text
-	volume: "0.8",
-	delay: 50, //delay start of video 1000= 1 second
-	goStop: "1",
-	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	btnText: "PLAY", //you can customs playbuton text
+	volume: "0.2",
+	delay: 50, //delay start of video 1000= 1 second
+	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	exitbtn: "yes", //show or not show exitbtn
 	autostart: "oncethenmute", //yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop,loop, slide
-	exitoncomplete: "no", //option for player to close after video completes. "yes" or "no"
+	goStop: "1",
+	exitoncomplete: false, //option for player to close after video completes. true or false
 	path: "talkingheads", //path to where the files are located
 	actorpic: "juliapricing", //transparent gif
 	canvasVideo: "juliapricing-matte_v2", //Just name,not extension
 	h264: "juliapricing", //Just name,not extension h264
 	// end Main Player Vars--------------------------------------------------------------------------------------
+	//
+	//
+	//
 	overflow: "hidden",
 	vendors: ["-moz-", "-webkit-", "-o-", "-ms-", "-khtml-", ""],
 	toPlay: true,
@@ -132,7 +135,6 @@ var th = {
 		}
 	},
 	location: {
-		position: "fixed", //fixed or absolute positioning
 		left: function () {
 			'use strict';
 			switch (th.leftEnd) {
@@ -257,7 +259,6 @@ function createPlayer() {
 	'use strict';
 	if (th.responsive) {
 		th.holder = document.getElementById("wthvideo");
-		th.holder.style.position = "relative";
 		th.holder.style.left = "50%";
 		th.holder.style.marginLeft = (th.width / 2) * -1 + "px";
 		th.holder.style.top = "auto";
@@ -265,7 +266,6 @@ function createPlayer() {
 	} else {
 		th.holder = document.createElement("div");
 		th.holder.id = "wthvideo";
-		th.holder.style.position = th.position;
 		th.holder.style.marginLeft = th.centeroffset + "px";
 		th.holder.style.left = th.left;
 		th.holder.style.right = th.right;
@@ -275,6 +275,7 @@ function createPlayer() {
 		var wthbody = document.body || document.getElementsByTagName("body")[0];
 		wthbody.insertBefore(th.holder, wthbody.childNodes[0]);
 	}
+	th.holder.style.position = th.position;
 	th.holder.style.height = th.height + "px";
 	th.holder.style.width = th.width + "px";
 	th.holder.style.zIndex = 9999;
@@ -535,8 +536,9 @@ function createPlayer() {
 		th.holder.addEventListener("mouseover", overVideo, false);
 		th.holder.addEventListener("mouseout", outVideo, false);
 		th.video.addEventListener("ended", videoEnded, false);
-		if (th.exitoncomplete === "yes") {
-			th.video.getElementById('talkinghead').addEventListener("ended", closePlayer, false);
+		console.log( th.exitoncomplete );
+		if (th.exitoncomplete) {
+			th.video.addEventListener("ended", closePlayer, false);
 		}
 		if (th.player.goStop()) {
 			th.video.ontimeupdate = function () {
@@ -560,14 +562,18 @@ function createPlayer() {
 		if (e.target !== e.currentTarget) {
 			switch (e.target.id) {
 				case "talkingCanvas":
+					if (th.controlbar === "mouse") {
 					th.controls.playerBar.style.bottom = (th.playerBar.height() * -1) + "px";
+					}
 					break;
 				case "playBtn":
 				case "muteBtn":
 				case "restartBtn":
 				case "closeBtn":
 				case "htmlClose":
-					th.controls.playerBar.style.bottom = (th.playerBar.height() * -1) + "px";
+					if (th.controlbar === "mouse") {
+						th.controls.playerBar.style.bottom = (th.playerBar.height() * -1) + "px";
+					}
 					e.target.style.opacity = 1;
 					break;
 			}
@@ -579,7 +585,9 @@ function createPlayer() {
 		if (e.target !== e.currentTarget) {
 			switch (e.target.id) {
 				case "talkingCanvas":
+					if (th.controlbar === "mouse") {
 					th.controls.playerBar.style.bottom = "0px";
+					}
 					break;
 				case "playBtn":
 				case "muteBtn":
@@ -587,8 +595,9 @@ function createPlayer() {
 				case "closeBtn":
 				case "htmlClose":
 					e.target.style.opacity = 0.5;
-					th.controls.playerBar.style.bottom = th.playerBar.height;
+					if (th.controlbar === "mouse") {
 					th.controls.playerBar.style.bottom = "0px";
+					}
 					break;
 			}
 		}
@@ -613,7 +622,6 @@ function createPlayer() {
 				case "click-to-play":
 				case "playBtn":
 				case "talkingCanvas":
-					console.log(th.player.mute());
 					if (th.player.goStop()) {
 						th.autostart = "yes";
 						playToggle();
@@ -631,7 +639,7 @@ function createPlayer() {
 	}
 
 	function videoEnded() {
-		if (th.exitoncomplete === "yes") {
+		if (th.exitoncomplete) {
 			closePlayer();
 		} else if (th.player.loop() !== true) {
 			startBtnCreate();
@@ -740,7 +748,7 @@ function report() {
 				return obj.toString();
 		}
 	}
-	console.log("!th.storage.use()= " + th.player.autostart());
+	console.log("controlbar= " + th.controlbar);
 }
 // Copyright 2018 Website Talking Heads
 //am I still working?

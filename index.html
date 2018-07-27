@@ -4,16 +4,89 @@
 <meta charset="utf-8">
 <link rel="icon" href="https://www.websitetalkingheads.com/favicon.ico">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-<style type="text/css">
-	textarea{width: 100%;height: 100%;margin-top: 2rem;}
-</style>
 <title>Website Spokesperson Software</title>
-	
 </head>
 
-<body style="background: white;height:800px">
-	<div id="wthvideo"></div>
-
+<body style="background: white;height:1800px">
+<section class="page-header container">
+  <h2 class="text-center">The Talking Heads<sup class="tm-small">&#174;</sup> Website Spokesperson Software</h2>
+  <h3 class="text-center">Best Custom Features on the Market</h3>
+  <p>Your Website Spokesperson comes with the most robust, free, copyrighted player on the market today. No one has over 30 variable features included free. You can control all of the following and much more.  We use HTL5 to produce a video with Transparent backgroud on Desktops, Laptops, and many Devices.</p>
+  <dl class="dl-horizontal">
+    <h2>Player Features</h2>
+    <dt>Responsive</dt>
+    <dd>With the rise of responsive websites we have added the ability to place our player inside a specific div tag.  If you set the responsive variable to "yes" you can then place <code>&lt;div id=&quot;wthvideo&quot;&gt;&lt;/div&gt;</code> inside of the div you would like the video to play in. This will place the video inside of that tag, where ever it is on the page. </dd>
+    <dt>showDevice</dt>
+    <dd>Sometimes you may not want the video to appear on devices.  This will set that(<code>true</code> or <code>false</code>)</dd>
+    <dt>Cookies</dt>
+    <dd>Use any of the functions that require cookies.(<code>true</code> or <code>false</code>)</dd>
+    <dt>Position</dt>
+    <dd> There are 2 options:
+      <ul>
+        <li><code>fixed</code>-The video is positioned relative to the browser window. When you scroll the page the video stays in the same place.</li>
+        <li><code>absolute</code>-The video 'sticks' to the page.  If you scroll the page the video scrolls with the page</li>
+      </ul>
+    </dd>
+    <dt>Positioning</dt>
+    <dd> You can set the position of the player on the screen:
+      <ul>
+        <li><code>left</code>: Usual options are "auto", "0" or "50%". 0 will put the player on the left side of the screen.  Auto puts the player where the right value places it.  50% place the left edge of the player at the middle of the screen then set the centeroffset value below to move the player to the left or right.</li>
+        <li><code>right</code>: Usually 0 or "auto" If the left value is anything but "auto" this should be auto.</li>
+        <li><code>divTop</code>: auto or the number of pixels from the top you want the player to be.</li>
+        <li><code>bottom</code>: "auto" or the number of pixels from the bottom you want the player to be.</li>
+        <li><code>centeroffset</code>: Set to "auto" unless left is set to "50%" then the number of pixels from the center.  Negative numbers are left and positive are right.</li>
+      </ul>
+    </dd>
+    <dt>bgColor</dt>
+    <dd>The background color for the controlbar and click to play button.  RGBA value.</dd>
+    <dt>textColor</dt>
+    <dd>The color of the text on the click to play button.  Hex value</dd>
+    <dt>btnText</dt>
+    <dd>Text in the click to play button.</dd>
+    <dt>volume</dt>
+    <dd>Player volume.  Value from 0.1 to 1.0</dd>
+    <dt>delay</dt>
+    <dd>Delay start of video 1000 = 1 second</dd>
+    <dt>controlbar</dt>
+    <dd>
+      <ul>
+        <li><code>yes</code>- Always show the controlbar</li>
+        <li><code>no</code>- Don't show the controlbar</li>
+        <li><code>mouse</code>- Show the controlbar when the mouse is over the player.</li>
+      </ul>
+    </dd>
+    <dt>exitbtn</dt>
+    <dd>To show or not show the exit button on the top right.</dd>
+    <dt>autostart</dt>
+    <dd>
+      <ul>
+        <li>yes-Start video on page load.  Note some browsers or plugins prevent autostart video.</li>
+        <li>no-Show player with image of spokesperson.</li>
+        <li>mute-Show the player with muted video.</li>
+        <li>oncethenpic-Autostart the player on the first visit of a browser session. After that show an image.</li>
+        <li>oncethenmute-Autostart the player on the first visit of a browser session. After that show a muted version.</li>
+        <li>onceonlythenpic-Autostart the player on the first visit. After that show an image until they clear their cookies.</li>
+        <li>onceonlythenmute-Autostart the player on the first visit. After that show muted video until they clear their cookies.</li>
+        <li>once-  Only show the player on the first visit of a browser session.</li>
+        <li>onceonly- Only show the player on the first visit(until they clear their cookies)</li>
+        <li>goStop-Autostart the video then have it stop until viewer clicks play.</li>
+        <li>loop-Muted video that loops.</li>
+        <li>slide-The player slides up with the image of the spokesperson.  The viewer can then click play.</li>
+      </ul>
+    </dd>
+    <dt>exitoncomplete</dt>
+    <dd>Close the player on video complete. <code>true</code> or <code>false</code></dd>
+    <dt>path</dt>
+    <dd>Path to where the files are stored.  Usually talkingheads.</dd>
+    <dt>actorpic</dt>
+    <dd>The name of the actor's image.  Must be a gif(don't add the <code>.gif</code></dd>
+    <dt>canvasVideo</dt>
+    <dd>Name of the mp4 with the matte. Don't add the <code>.mp4</code></dd>
+    <dt>h264</dt>
+    <dd>Name of the mp4 without the matte. Don't add the <code>.mp4</code></dd>
+  </dl>
+</section>
+<section class="container bg-primary" style="height: 600px"></section>
 <script src="talkingheads/website-spokesperson.js"></script>
 </body>
 </html>
