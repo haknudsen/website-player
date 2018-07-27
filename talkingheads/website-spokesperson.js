@@ -21,7 +21,7 @@ var th = {
 	delay: 50, //delay start of video 1000= 1 second
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	exitbtn: "yes", //show or not show exitbtn
-	autostart: "yes", //yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop,loop, slide
+	autostart: "oncethenpic", //yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop,loop, slide
 	goStop: "1",
 	exitoncomplete: false, //option for player to close after video completes. true or false
 	path: "talkingheads", //path to where the files are located
@@ -115,7 +115,6 @@ var th = {
 			if (l) {
 				return true;
 			} else {
-				localStorage.setItem(th.canvasVideo, true);
 				return false;
 			}
 		},
@@ -125,7 +124,6 @@ var th = {
 			if (s) {
 				return true;
 			} else {
-				sessionStorage.setItem(th.canvasVideo, true);
 				return false;
 			}
 		},
@@ -213,10 +211,19 @@ var th = {
 					return false;
 			}
 		},
+		once: function () {
+			'use strict';
+			if ((th.autostart === "oncethenmute" || th.autostart === "oncethenpic") && th.storage.session()) {
+				console.log(th.storage.session());
+				return false;
+			} else {
+				return true;
+			}
+		},
 		autostart: function () {
 			'use strict';
-			console.log("mute-" + this.mute());
-			if (this.loop() || this.mute() || this.goStop() || th.autostart === "yes") {
+			console.log("once-" + th.player.once());
+			if (this.loop() || this.mute() || this.goStop() || th.autostart === "yes" || th.player.once()) {
 				return true;
 			} else {
 				return false;
@@ -285,6 +292,8 @@ function createPlayer() {
 		createCanvas();
 	}
 	playSpokesperson();
+	sessionStorage.setItem(th.canvasVideo, true);
+	localStorage.setItem(th.canvasVideo, true);
 	//-----------------------------------------------CREATE VIDEO--------------	
 	function createVideo() {
 		th.video = document.createElement("VIDEO");
@@ -724,7 +733,7 @@ function report() {
 		console.log('Not going to play');
 		return;
 	}
-	var str = objToString(th.player, 3);
+	var str = objToString(th.storage, 3);
 	str.replace(/,/g, "\n");
 
 	function objToString(obj, ndeep) {
@@ -746,7 +755,13 @@ function report() {
 				return obj.toString();
 		}
 	}
-	console.log("session= " + th.storage.session() + " local-" + th.storage.local());
+	console.log("storage= " + str);
+	console.log("local=" + th.storage.local());
+	console.log("session=" + th.storage.session());
+	console.log("use=" + th.storage.use());
+	console.log("name=" + th.storage.name());
+	console.log("autostart=" + th.player.autostart());
+	console.log("once=" + th.player.once());
 }
 // Copyright 2018 Website Talking Heads
 //am I still working?
