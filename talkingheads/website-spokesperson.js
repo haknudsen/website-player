@@ -21,7 +21,7 @@ var th = {
 	delay: 50, //delay start of video 1000= 1 second
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	exitbtn: "yes", //show or not show exitbtn
-	autostart: "once", //yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop,loop, slide
+	autostart: "onceonlythenmute", //yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop,loop, slide
 	goStop: "1",
 	exitoncomplete: false, //option for player to close after video completes. true or false
 	path: "talkingheads", //path to where the files are located
@@ -210,27 +210,39 @@ var th = {
 		},
 		once: function () {
 			'use strict';
-			if ((th.autostart === "once"|| th.autostart === "oncethenmute" || th.autostart === "oncethenpic") && th.storage.session()) {
-				console.log(th.storage.session());
-				return false;
-			} else {
+			if (th.storage.session()) {
+				if ((th.autostart === "once" || th.autostart === "oncethenmute" || th.autostart === "oncethenpic")) {
+					return false;
+				}
 				return true;
+			}else{
+				return false;
 			}
 		},
 		onceonly: function () {
 			'use strict';
-			if (( th.autostart ==="onceonly" || th.autostart === "onceonlythenmute" || th.autostart === "onceonlythenpic") && th.storage.local()) {
-			console.log( th.storage.local() + " - " +th.autostart );
-				return false;
-			} else {
+			if (!th.storage.local()) {
+				if (th.autostart === "onceonly" || th.autostart === "onceonlythenmute" || th.autostart === "onceonlythenpic") {
 				return true;
+			} else {
+				return false;
+			}
+			}else{
+				return false;
 			}
 		},
 		autostart: function () {
 			'use strict';
-			if (this.loop() || this.mute() || this.goStop() || th.autostart === "yes"|| th.player.onceonly()  || th.player.once() || !th.storage.use()) {
+			if (th.player.loop() || th.player.mute() || th.player.goStop() || th.autostart === "yes") {
+				console.log("hit");
 				return true;
-			} else {
+			} else if (th.player.onceonly()) {
+				console.log("onceonly " + th.player.onceonly());
+				return true;
+			} else if (!th.player.once()) {
+				console.log("once " + th.player.once());
+				return true;
+			}else{
 				return false;
 			}
 		},
@@ -738,7 +750,7 @@ function report() {
 		console.log('Not going to play');
 		return;
 	}
-	console.log("local=" + th.storage.local()+ " session=" + th.storage.session()+" use=" + th.storage.use() + " name=" + th.storage.name() + " autostart=" + th.player.autostart() + " once=" + th.player.once());
+	console.log("local=" + th.storage.local() + " session=" + th.storage.session() + " use=" + th.storage.use() + " name=" + th.storage.name() + " autostart=" + th.player.autostart() + " once=" + th.player.once());
 }
 // Copyright 2018 Website Talking Heads
 //am I still working?
