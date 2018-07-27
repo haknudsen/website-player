@@ -21,7 +21,7 @@ var th = {
 	delay: 50, //delay start of video 1000= 1 second
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
 	exitbtn: "yes", //show or not show exitbtn
-	autostart: "oncethenmute", //yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop,loop, slide
+	autostart: "once", //yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop,loop, slide
 	goStop: "1",
 	exitoncomplete: false, //option for player to close after video completes. true or false
 	path: "talkingheads", //path to where the files are located
@@ -198,10 +198,10 @@ var th = {
 					}
 					break;
 				case "onceonlythenmute":
-					if (th.storage.session()) {
-						return true;
-					} else {
+					if (th.player.onceonly()) {
 						return false;
+					} else {
+						return true;
 					}
 					break;
 				default:
@@ -210,8 +210,17 @@ var th = {
 		},
 		once: function () {
 			'use strict';
-			if ((th.autostart === "oncethenmute" || th.autostart === "oncethenpic") && th.storage.session()) {
+			if ((th.autostart === "once"|| th.autostart === "oncethenmute" || th.autostart === "oncethenpic") && th.storage.session()) {
 				console.log(th.storage.session());
+				return false;
+			} else {
+				return true;
+			}
+		},
+		onceonly: function () {
+			'use strict';
+			if (( th.autostart ==="onceonly" || th.autostart === "onceonlythenmute" || th.autostart === "onceonlythenpic") && th.storage.local()) {
+			console.log( th.storage.local() + " - " +th.autostart );
 				return false;
 			} else {
 				return true;
@@ -219,8 +228,7 @@ var th = {
 		},
 		autostart: function () {
 			'use strict';
-			console.log("once-" + th.player.once());
-			if (this.loop() || this.mute() || this.goStop() || th.autostart === "yes" || th.player.once() || !th.storage.use()) {
+			if (this.loop() || this.mute() || this.goStop() || th.autostart === "yes"|| th.player.onceonly()  || th.player.once() || !th.storage.use()) {
 				return true;
 			} else {
 				return false;
@@ -245,9 +253,9 @@ var th = {
 		},
 		toPlay: function () {
 			'use strict';
-			if (th.storage.local && th.autostart === "once") {
+			if (!th.player.once() && th.autostart === "once") {
 				return false;
-			} else if (th.storage.session && th.autostart === "onceonly") {
+			} else if (!th.player.onceonly() && th.autostart === "onceonly") {
 				return false;
 			} else {
 				return true;
