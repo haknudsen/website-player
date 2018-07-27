@@ -190,24 +190,20 @@ var th = {
 		mute: function () {
 			'use strict';
 			if (!th.storage.use()) {
-				th.autostart = "yes";
 				return false;
 			}
 			switch (th.autostart) {
 				case "mute":
-					th.autostart = "yes";
 					return true;
 				case "oncethenmute":
-					if (th.storage.local === true) {
-						th.autostart = "yes";
+					if (th.storage.local()) {
 						return true;
 					} else {
 						return false;
 					}
 					break;
 				case "onceonlythenmute":
-					if (th.storage.storage === true) {
-						th.autostart = "yes";
+					if (th.storage.session()) {
 						return true;
 					} else {
 						return false;
@@ -219,7 +215,8 @@ var th = {
 		},
 		autostart: function () {
 			'use strict';
-			if (this.loop() || this.mute() || this.goStop() || !th.storage.use() || th.autostart === "yes") {
+				console.log("mute-" + this.mute() );
+			if (this.loop() || this.mute() || this.goStop() ||  th.autostart === "yes") {
 				return true;
 			} else {
 				return false;
@@ -440,8 +437,10 @@ function createPlayer() {
 				});
 			}
 			if (th.player.mute()) {
+				console.log( "mute=" + th.player.mute() );
 				th.video.muted = true;
 				startBtnCreate();
+				startPlaying();
 			} else if (th.autostart === "no") {
 				goPoster();
 			} else {
@@ -536,7 +535,6 @@ function createPlayer() {
 		th.holder.addEventListener("mouseover", overVideo, false);
 		th.holder.addEventListener("mouseout", outVideo, false);
 		th.video.addEventListener("ended", videoEnded, false);
-		console.log( th.exitoncomplete );
 		if (th.exitoncomplete) {
 			th.video.addEventListener("ended", closePlayer, false);
 		}
@@ -626,7 +624,6 @@ function createPlayer() {
 						th.autostart = "yes";
 						playToggle();
 					} else if (th.player.mute()) {
-						th.player.mute = false;
 						th.video.muted = false;
 						th.video.load();
 					} else {
@@ -748,7 +745,7 @@ function report() {
 				return obj.toString();
 		}
 	}
-	console.log("controlbar= " + th.controlbar);
+	console.log("storage= " + th.storage.session() + " local-" + th.storage.local());
 }
 // Copyright 2018 Website Talking Heads
 //am I still working?
