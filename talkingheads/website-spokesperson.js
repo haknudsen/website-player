@@ -1,28 +1,28 @@
 // Copyright 2018 Website Talking Heads
-//Version 1.4.1
+//Version 1.4.2
 // JavaScript Document
 
 var th = {
-	responsive: false, //You must place <div id:"wthvideo"></div> inside the div you want the video to be in.
+	responsive: true, //You must place <div id:"wthvideo"></div> inside the div you want the video to be in.
 	showDevice: true, //Display Talking Head On Devices true or false
 	cookies: true, //Use cookies to effect autostart and once per session options -true or false
-	width: 352, //video width
-	height: 320, //video height
-	position: "fixed", //fixed or absolute positioning
-	left: "auto", //if centering on page change this to 50%
-	right: "0",
-	divTop: "auto",
-	bottom: "0",
-	centeroffset: "auto", //if centering on page negative numbers are left and positive numbers are right
-	bgColor: "rgba(255, 255, 255,0.5)", //the color of the player bar.
+	width: 352, //video width in pixels.  Don't add the px
+	height: 320, //video height in pixels.  Don't add the px
+	position: "fixed", //absolute-The video 'sticks' to the page. fixed-video stays in the same place on the screen.
+	left: "0", //if centering on page change this to 50%
+	right: "auto", //Usually 0 or "auto" If the left value is anything but "auto" this should be auto.
+	divTop: "0", //number of pixels from top of screen
+	bottom: "auto", //humber of pixels from bottom of screen.
+	centeroffset: "auto", //if centering on page negative numbers are left and positive numbers are right, else use "auto"
+	bgColor: "rgba(255, 255, 255,0.9)", //the color of the player bar.
 	textColor: "#0474ff", //set color of text
 	btnText: "PLAY", //you can customs playbuton text
-	volume: "0.2",
-	delay: 50, //delay start of video 1000= 1 second
+	volume: "0.6",
+	delay: 0, //delay start of video 1000= 1 second
 	controlbar: "mouse", //options for showing the controlbar, yes, no, and mouse
-	exitbtn: true, //show or not show exitbtn
-	autostart: "no", //yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop,loop, slide
-	goStop: 30,//frame to stop on.  30 frames is one second.
+	exitbtn: false, //show or not show exitbtn
+	autostart: "goStop", //yes, no, mute, oncethenpic, oncethenmute, onceonlythenpic, onceonlythenmute, once, onceonly,goStop,loop, slide
+	goStop: 45, //frame to stop on.  30 frames is one second.
 	exitoncomplete: false, //option for player to close after video completes. true or false
 	path: "talkingheads", //path to where the files are located
 	actorpic: "juliapricing", //transparent gif
@@ -285,10 +285,6 @@ function createPlayer() {
 	'use strict';
 	if (th.responsive) {
 		th.holder = document.getElementById("wthvideo");
-		th.holder.style.left = "50%";
-		th.holder.style.marginLeft = (th.width / 2) * -1 + "px";
-		th.holder.style.top = "auto";
-		th.holder.style.bottom = 0;
 	} else {
 		th.holder = document.createElement("div");
 		th.holder.id = "wthvideo";
@@ -565,9 +561,10 @@ function createPlayer() {
 		th.holder.addEventListener("click", doSomething, false);
 		th.holder.addEventListener("mouseover", overVideo, false);
 		th.holder.addEventListener("mouseout", outVideo, false);
-		th.video.addEventListener("ended", videoEnded, false);
 		if (th.exitoncomplete) {
 			th.video.addEventListener("ended", closePlayer, false);
+		} else {
+			th.video.addEventListener("ended", videoEnded, false);
 		}
 		if (th.player.goStop()) {
 			th.video.ontimeupdate = function () {
@@ -651,16 +648,22 @@ function createPlayer() {
 				case "click-to-play":
 				case "playBtn":
 				case "talkingCanvas":
-						if (th.autostart === "loop") {
-							playToggle();
-							break;
-						}
+					if (th.autostart === "loop") {
+						playToggle();
+						break;
+					}
 					if (th.player.goStop()) {
 						th.autostart = "yes";
 						playToggle();
-					} else if (th.player.mute()) {
-						th.autostart = "yes";
+						break;
+					}
+					if (th.player.mute()) {
+						th.autostart = "playing";
+						console.log(th.player.mute());
+						th.btn.startBtn.style.visibility = "hidden";
+						th.video.muted = false;
 						th.video.autoplay = true;
+						th.video.loop = false;
 						th.video.load();
 					} else {
 						playToggle();
@@ -672,11 +675,11 @@ function createPlayer() {
 	}
 
 	function videoEnded() {
+		console.log(th.player.mute());
 		if (th.exitoncomplete) {
 			closePlayer();
-		} else if (th.player.loop()) {
+		}else {
 			th.video.load();
-		} else {
 			startBtnCreate();
 			goPoster();
 		}
@@ -761,7 +764,7 @@ function report() {
 		console.log('Not going to play');
 		return;
 	}
-	console.log("autostart=" + th.autostart);
+	console.log();
 }
 // Copyright 2018 Website Talking Heads
 //am I still working?
